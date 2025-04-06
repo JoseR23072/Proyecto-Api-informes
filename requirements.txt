@@ -1,7 +1,7 @@
 fastapi #framework para construir la api
 uvicorn #libreria para levantar un servidor
 sqlmodel #libreria de fastapi para modelos
-pymysql #conexion a BDD
+mysql-connector-python #conexion a BDD
 pydantic #
-jinja2 #para
-weasyprint
+xhtml2pdf
+email-validator
