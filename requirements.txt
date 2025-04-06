@@ -1,0 +1,7 @@
+fastapi #framework para construir la api
+uvicorn #libreria para levantar un servidor
+sqlmodel #libreria de fastapi para modelos
+pymysql #conexion a BDD
+pydantic #
+jinja2 #para
+weasyprint

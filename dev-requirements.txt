@@ -1,0 +1,6 @@
+black           # Formateo de código
+isort           # Ordenar imports
+mypy            # Análisis estático de tipos
+
+flake8
+

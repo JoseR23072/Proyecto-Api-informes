@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #f2f2f2;
+            padding: 10px;
+        }
+
+        .contenedor-logo img {
+            height: 100px;
+            border-radius: 50px;
+        }
+
+        .header {
+            display: flex;
+            gap: 30px;
+        }
+
+        .subcontenedor-h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .contenedor-h1 {
+            width: 100%;
+        }
+
+        .container-info {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="contenedor-logo">
+            <img src="./web-app-manifest-512x512.png" alt="">
+        </div>
+        <div class="contenedor-h1">
+            <div class="subcontenedor-h1">
+                <h1>RiverSpain</h1>
+            </div>
+        </div>
+    </div>
+    <div class="container-info">
+        <div>
+            <p>Nombre batida: {{ nombre }}</p>
+        </div>
+        <div>
+            <p>Zona: {{ zona }}</p>
+        </div>
+        <div>
+            <p>Fecha: {{ fecha }}</p>
+        </div>
+    </div>
+    <p>Lista de asistentes:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Número de voluntario</th>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asistente in asistentes %}
+            <tr>
+                <td>{{ asistente.id }}</td>
+                <td>{{ asistente.numero_voluntario }}</td>
+                <td>{{ asistente.nombre }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>
