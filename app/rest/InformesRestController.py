@@ -8,3 +8,4 @@ router = APIRouter()
 @router.post("/prueba", response_model=VoluntarioDto)
 def crear_voluntario(voluntario: VoluntarioDto):
     return create_voluntario(voluntario)
+

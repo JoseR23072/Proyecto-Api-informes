@@ -3,5 +3,6 @@ uvicorn #libreria para levantar un servidor
 sqlmodel #libreria de fastapi para modelos
 mysql-connector-python #conexion a BDD
 pydantic #
-xhtml2pdf
+weasyprint
+jinja2
 email-validator

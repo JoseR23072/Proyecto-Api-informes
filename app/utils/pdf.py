@@ -1,125 +1,47 @@
-from xhtml2pdf import pisa
+import os
+from weasyprint import HTML
+from jinja2 import Environment, FileSystemLoader
 
 def generar_pdf(nombre, zona, fecha, asistentes):
-    html_content = f"""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{nombre} - Informe de Batida</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-            }}
-
-            .header {{
-                background-color: #f2f2f2;
-                padding: 10px;
-            }}
-
-            .contenedor-logo img {{
-                height: 100px;
-                border-radius: 50px;
-            }}
-
-            .header {{
-                display: flex;
-                gap: 30px;
-            }}
-
-            .subcontenedor-h1 {{
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-            }}
-
-            .contenedor-h1 {{
-                width: 100%;
-            }}
-
-            .container-info {{
-                display: flex;
-                justify-content: space-between;
-            }}
-
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }}
-
-            th, td {{
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }}
-
-            th {{
-                background-color: #f2f2f2;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="contenedor-logo">
-                <img src="./web-app-manifest-512x512.png" alt="">
-            </div>
-            <div class="contenedor-h1">
-                <div class="subcontenedor-h1">
-                    <h1>RiverSpain</h1>
-                </div>
-            </div>
-        </div>
-        <div class="container-info">
-            <div>
-                <p>Nombre batida: {nombre}</p>
-            </div>
-            <div>
-                <p>Zona: {zona}</p>
-            </div>
-            <div>
-                <p>Fecha: {fecha}</p>
-            </div>
-        </div>
-        <p>Lista de asistentes:</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Número de voluntario</th>
-                    <th>Nombre</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
+    # Obtener la ruta absoluta del directorio del script actual (app/utils)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Iterar sobre los asistentes y agregar filas al HTML
+    # Ruta al directorio de plantillas
+    plantillas_dir = os.path.join(current_dir, "pdf_asistencia_batida")
+    
+    # Crear un entorno Jinja2 con el directorio de plantillas
+    env = Environment(loader=FileSystemLoader(plantillas_dir))
+    
+    # Cargar la plantilla
+    template = env.get_template("template.html")
+    
+    # Generar el HTML para los asistentes
+    asistentes_html = ""
     for asistente in asistentes:
-        html_content += f"""
-            <tr>
-                <td>{asistente['id']}</td>
-                <td>{asistente['numero_voluntario']}</td>
-                <td>{asistente['nombre']}</td>
-            </tr>
-        """
+        asistentes_html += "<tr><td>{id}</td><td>{numero_voluntario}</td><td>{nombre}</td></tr>".format(
+            id=asistente['id'],
+            numero_voluntario=asistente['numero_voluntario'],
+            nombre=asistente['nombre']
+        )
+
+    # Renderizar el HTML con Jinja2
+    html_content = template.render(
+        titulo=f"{nombre} - Informe de Batida",
+        nombre=nombre,
+        zona=zona,
+        fecha=fecha,
+        ruta_logo="file://" + os.path.join(plantillas_dir, "web-app-manifest-512x512.png").replace("\\", "/"),
+        asistentes_html=asistentes_html
+    )
     
-    # Cerrar el contenido de la tabla y el HTML
-    html_content += """
-            </tbody>
-        </table>
-    </body>
-    </html>
-    """
-    
-    # Convertir el HTML a PDF
-    file_name = f"{nombre}_informe.pdf"
-    with open(file_name, "wb") as output_file:
-        pisa.CreatePDF(html_content, dest=output_file)
+    # Crear el PDF usando WeasyPrint
+    file_name = f"{nombre.replace(' ', '_')}_informe.pdf"
+    HTML(string=html_content).write_pdf(file_name)
 
     return file_name
 
+# Prueba
 if __name__ == "__main__":
-    # Datos de prueba para la generación del informe
     nombre = "Batida del Río"
     zona = "Zona A"
     fecha = "2025-04-06"
@@ -129,8 +51,5 @@ if __name__ == "__main__":
         {"id": 3, "numero_voluntario": "54321", "nombre": "Carlos Martínez"}
     ]
 
-    # Llamar a la función para generar el PDF
     archivo_pdf = generar_pdf(nombre, zona, fecha, asistentes)
-
-    # Imprimir el nombre del archivo generado
     print(f"PDF generado con éxito: {archivo_pdf}")

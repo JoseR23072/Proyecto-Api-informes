@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>{{ titulo }}</title>
     <style>
+        
         body {
             font-family: Arial, sans-serif;
         }
@@ -62,24 +63,16 @@
 <body>
     <div class="header">
         <div class="contenedor-logo">
-            <img src="./web-app-manifest-512x512.png" alt="">
+            <img src="{{ ruta_logo }}" alt="Logo">
         </div>
         <div class="contenedor-h1">
-            <div class="subcontenedor-h1">
-                <h1>RiverSpain</h1>
-            </div>
+            <h1>RiverSpain</h1>
         </div>
     </div>
     <div class="container-info">
-        <div>
-            <p>Nombre batida: {{ nombre }}</p>
-        </div>
-        <div>
-            <p>Zona: {{ zona }}</p>
-        </div>
-        <div>
-            <p>Fecha: {{ fecha }}</p>
-        </div>
+        <p>Nombre batida: {{ nombre }}</p>
+        <p>Zona: {{ zona }}</p>
+        <p>Fecha: {{ fecha }}</p>
     </div>
     <p>Lista de asistentes:</p>
     <table>
@@ -91,13 +84,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for asistente in asistentes %}
-            <tr>
-                <td>{{ asistente.id }}</td>
-                <td>{{ asistente.numero_voluntario }}</td>
-                <td>{{ asistente.nombre }}</td>
-            </tr>
-            {% endfor %}
+            {{ asistentes_html | safe }}
         </tbody>
     </table>
 </body>
