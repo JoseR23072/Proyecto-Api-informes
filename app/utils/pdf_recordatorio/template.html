@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recordatorio de Batida</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #033E6B;
+            background-color: #E6F4F9;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #026C9F;
+        }
+
+        .content {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .map {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .map img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌊 ¡Gracias por tu compromiso!</h1>
+            <h2>{{ nombre_batida }}</h2>
+        </div>
+        <div class="content">
+            <p>Hola {{ nombre_voluntario }},</p>
+
+            <p>Este es un recordatorio amable para informarte de tu participación en la siguiente batida organizada por <strong>RiverSpain</strong>.</p>
+
+            <ul>
+                <li><strong>Fecha:</strong> {{ fecha }}</li>
+                <li><strong>Ciudad:</strong> {{ ciudad }}</li>
+                <li><strong>Punto de encuentro:</strong> <a href="{{ direccion }}">{{ direccion }}</a></li>
+            </ul>
+
+            <p>Adjunto encontrarás un archivo PDF con los detalles de la actividad. ¡Te esperamos con energía y muchas ganas de seguir cuidando nuestros ríos y mares!</p>
+        </div>
+
+        <div class="map">
+            <img src="{{ imagen_mapa }}" alt="Ubicación en el mapa">
+        </div>
+
+        <div class="footer">
+            <p>Si tienes alguna duda, no dudes en contactar con nosotros.</p>
+            <p>Equipo de RiverSpain 🌿</p>
+        </div>
+    </div>
+</body>
+</html>

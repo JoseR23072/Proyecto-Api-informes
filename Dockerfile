@@ -1,6 +1,19 @@
 # Usa una imagen base oficial de Python
 FROM python:3.11-slim
 
+
+# Actualiza los repositorios e instala las dependencias nativas necesarias para WeasyPrint
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libgirepository1.0-dev \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
 
