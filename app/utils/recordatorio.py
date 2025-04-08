@@ -1,5 +1,4 @@
 import os
-import requests
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
@@ -32,6 +31,7 @@ def generar_pdf_recordatorio(nombre_voluntario, nombre_batida, fecha, latitud,lo
     url_mapa = obtener_url_mapa(latitud, longitud)
     enlace_como_llegar = obtener_enlace_como_llegar(latitud, longitud)
 
+    print(url_mapa)
     # Cargar y renderizar plantilla
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template("template.html")
