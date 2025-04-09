@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from typing import List
-from app.schemas.Voluntario import VoluntarioDto  # Asegúrate de importar tu DTO
+from schemas.Voluntario import VoluntarioDto  # Asegúrate de importar tu DTO
 
 def generar_excel_voluntarios(voluntarios: List[VoluntarioDto], output_dir: str) -> str:
     """

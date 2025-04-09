@@ -1,10 +1,14 @@
 import yagmail
 import os
+import dotenv
+dotenv.load_dotenv()
 
 EMAIL=os.getenv("EMAIL","correo@gmail.com")
 PASSWORD=os.getenv("EMAIL_PASSWORD","password")
 
 def enviar_email(pdf_file_path, destinatario):
+    print(EMAIL)
+    print(PASSWORD)
     # Autenticación de Gmail
     yag = yagmail.SMTP(user=EMAIL, password=PASSWORD)
 
@@ -42,4 +46,4 @@ if __name__== "__main__":
     "Recordatorio_ANA_Martínez.pdf")
 
     print(recordatorio)
-    enviar_email(pdf_file_path=recordatorio,destinatario="markius160404@gmail.com")
+    enviar_email(pdf_file_path=recordatorio,destinatario="example@gmail.com")

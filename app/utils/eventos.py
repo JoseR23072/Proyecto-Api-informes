@@ -4,8 +4,8 @@ import asyncio
 
 # Suponiendo que ya tienes la función existente para generar el PDF recordatorio.
 # Por ejemplo, desde tu módulo recordatorio:
-from recordatorio import generar_pdf_recordatorio
-from correo import enviar_email
+from utils.recordatorio import generar_pdf_recordatorio
+from utils.correo import enviar_email
 
 # Simulación de datos: función que "consulta" la base de datos y devuelve batidas.
 def query_batidas_proximas():
@@ -22,8 +22,8 @@ def query_batidas_proximas():
        "longitud": -4.4214,
        "ciudad": "Málaga",
        "voluntarios": [
-            {"nombre": "Ana", "apellidos": "Martínez", "email": "josequispeogosi12927@gmail.com"},
-            {"nombre": "Juan", "apellidos": "González", "email": "josequispeogosi@gmail.com"},
+            {"nombre": "Ana", "apellidos": "Martínez", "email": "ana@example.com"},
+            {"nombre": "Juan", "apellidos": "González", "email": "juan@example.com"},
        ]
     }
     # Batida 2: programada para dentro de tres días (no se envía recordatorio hoy)
