@@ -22,8 +22,8 @@ def query_batidas_proximas():
        "longitud": -4.4214,
        "ciudad": "Málaga",
        "voluntarios": [
-            {"nombre": "Ana", "apellidos": "Martínez", "email": "maria@example.com"},
-            {"nombre": "Juan", "apellidos": "González", "email": "juan@example.com"},
+            {"nombre": "Ana", "apellidos": "Martínez", "email": "josequispeogosi12927@gmail.com"},
+            {"nombre": "Juan", "apellidos": "González", "email": "josequispeogosi@gmail.com"},
        ]
     }
     # Batida 2: programada para dentro de tres días (no se envía recordatorio hoy)
