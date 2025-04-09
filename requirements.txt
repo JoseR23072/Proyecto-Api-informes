@@ -5,8 +5,9 @@ mysql-connector-python #conexion a BDD
 pydantic #
 weasyprint
 jinja2
-email-validator
+email-validator #nuevas dependencias a partir de aqui
 requests
 pandas
 openpyxl
 yagmail
+apscheduler

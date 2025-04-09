@@ -61,11 +61,6 @@ if __name__ == "__main__":
     latitud = 36.7213
     longitud = -4.4214
 
-    nombre_voluntario="CARLOS MARICON DEL DEMONIO"
-    nombre_batida="CARLOS LA API DE MAPAS"
-    fecha="marcion del 21 de 2025"
-    ciudad="Salamanca"
-    latitud="40.94005332522014"
-    longitud="-5.65583059070932"
+    
     
     generar_pdf_recordatorio(nombre_voluntario, nombre_batida, fecha, latitud, longitud, ciudad)

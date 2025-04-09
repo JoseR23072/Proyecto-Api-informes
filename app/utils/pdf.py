@@ -40,7 +40,7 @@ def generar_pdf(nombre, zona, fecha, asistentes):
 
     return file_name
 
-# Prueba
+
 if __name__ == "__main__":
     nombre = "Batida del Río"
     zona = "Zona A"
