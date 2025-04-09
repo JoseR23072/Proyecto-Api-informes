@@ -1,5 +1,5 @@
-from app.models.Voluntario import Voluntario
-from app.config.database import get_session
+from models.Voluntario import Voluntario
+from config.database import get_session
 
 def guardar_voluntario(voluntario_data):
     with get_session() as session:

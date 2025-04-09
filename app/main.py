@@ -1,12 +1,14 @@
 from fastapi import FastAPI
-from app.rest import InformesRestController
+from rest import InformesRestController
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import logging
-
+import pytz
 from utils.eventos import enviar_recordatorios_diarios
+from dotenv import load_dotenv
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -14,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 scheduler = AsyncIOScheduler()
 
 # Agregar la tarea al scheduler para que se ejecute todos los días a las 6:00 AM.
-scheduler.add_job(enviar_recordatorios_diarios, CronTrigger(hour=14, minute=30))
+scheduler.add_job(enviar_recordatorios_diarios, CronTrigger(hour=22, minute=28, timezone=pytz.timezone("Europe/Madrid")))
 
 
 @asynccontextmanager

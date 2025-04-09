@@ -1,5 +1,5 @@
-from app.schemas.Voluntario import VoluntarioDto
-from app.repository.InformeRepository import guardar_voluntario
+from schemas.Voluntario import VoluntarioDto
+from repository.InformeRepository import guardar_voluntario
 
 def create_voluntario(voluntario: VoluntarioDto):
     entidad_voluntario= guardar_voluntario(voluntario)

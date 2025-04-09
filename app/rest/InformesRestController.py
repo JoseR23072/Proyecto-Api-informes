@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 # from app.schemas.Voluntario import VoluntarioCreate, VoluntarioRead
-from app.schemas.Voluntario import VoluntarioDto
-from app.services.InformeService import create_voluntario
-from app.utils import recordatorio
+from schemas.Voluntario import VoluntarioDto
+from services.InformeService import create_voluntario
+from utils import recordatorio
 router = APIRouter()
 
 @router.post("/prueba", response_model=VoluntarioDto)
