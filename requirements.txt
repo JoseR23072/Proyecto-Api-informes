@@ -9,3 +9,4 @@ email-validator
 requests
 pandas
 openpyxl
+yagmail
