@@ -1,5 +1,17 @@
-.venv/
-.vscode/
-*.pdf
-.env
+# Archivos de Excel
 *.xlsx
+
+# Directorios de caché de Python
+__pycache__/
+
+# Entorno virtual
+.venv/
+
+# Archivos de configuración sensible
+.env
+
+# Archivos PDF generados
+*.pdf
+
+# Configuración de VS Code
+.vscode/
