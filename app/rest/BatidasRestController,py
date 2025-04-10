@@ -1,0 +1,28 @@
+from fastapi import APIRouter
+
+router=APIRouter()
+
+@router.post("/batida")
+def crear_batida():
+    return None
+
+@router.get("/batida")
+def get_batida():
+    return None
+
+@router.put("/batida")
+def modificar_batida():
+    return None
+
+@router.post("/batida/apuntarse")
+def apuntarse_batida():
+    return None
+
+@router.post("/batida/despuntarse")
+def desapuntarse_batida():
+    return None
+
+#aqui hay que comprobar si el usuario esta ya apuntado
+@router.get("/batida/")
+def comprobar_voluntario_batida():
+    return None
