@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel,Field
 
-class Voluntario(SQLModel,table=True):
+class VoluntarioEntity(SQLModel,table=True):
     __tablename__ = 'voluntario'
 
     id:int | None = Field(default=None,primary_key=True)
@@ -13,3 +13,4 @@ class Voluntario(SQLModel,table=True):
     model_config = {
         'from_attributes': True,
     }
+

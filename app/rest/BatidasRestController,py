@@ -1,10 +1,20 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,Depends
+from schemas.Batida import BatidaDto
+from services.BatidaService import BatidaService
+from typing import Annotated
+
 
 router=APIRouter()
 
+BatidaService=Annotated[BatidaService,Depends(BatidaService)]
+
+
 @router.post("/batida")
-def crear_batida():
-    return None
+def crear_batida(batida:BatidaDto, service:BatidaService=Depends()) -> BatidaDto:
+    service.crear_batida(batida)
+    return BatidaDto
+
+
 
 @router.get("/batida")
 def get_batida():
@@ -14,12 +24,16 @@ def get_batida():
 def modificar_batida():
     return None
 
-@router.post("/batida/apuntarse")
+@router.put("/batida/apuntarse")
 def apuntarse_batida():
     return None
 
-@router.post("/batida/despuntarse")
+@router.put("/batida/desapuntarse")
 def desapuntarse_batida():
+    return None
+
+@router.delete("/batida/{id}")
+def eliminar_batida():
     return None
 
 #aqui hay que comprobar si el usuario esta ya apuntado

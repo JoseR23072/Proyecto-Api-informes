@@ -43,7 +43,7 @@ if __name__== "__main__":
     current_dir=os.path.dirname(os.path.abspath(__file__))
     recordatorio=os.path.join(current_dir,"salidas_pdf")
     recordatorio=os.path.join(recordatorio,
-    "Recordatorio_ANA_Martínez.pdf")
+    "Recordatorio_Ana_Martínez.pdf")
 
     print(recordatorio)
-    enviar_email(pdf_file_path=recordatorio,destinatario="example@gmail.com")
+    enviar_email(pdf_file_path=recordatorio,destinatario="ana@example.com")

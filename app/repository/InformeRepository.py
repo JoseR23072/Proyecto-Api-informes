@@ -1,9 +1,8 @@
-from models.Voluntario import Voluntario
+from models.Voluntario import VoluntarioEntity
 from config.database import get_session
 
-def guardar_voluntario(voluntario_data):
+def guardar_voluntario(voluntario:VoluntarioEntity):
     with get_session() as session:
-        voluntario = Voluntario(**voluntario_data.dict())
         session.add(voluntario)
         session.commit()
         session.refresh(voluntario)
