@@ -1,3 +1,4 @@
+import httpx
 from pydantic import BaseModel, EmailStr
 
 class VoluntarioDto(BaseModel):

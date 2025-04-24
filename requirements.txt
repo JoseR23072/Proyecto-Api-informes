@@ -13,3 +13,4 @@ openpyxl
 yagmail
 apscheduler
 python-dotenv
+httpx #fetch asincronos

@@ -1,7 +1,7 @@
+from __future__ import annotations
 from pydantic import BaseModel
 from models.Batida import BatidaEntity
 from typing import Optional, List
-from __future__ import annotations
 
 class BatidaDto(BaseModel):
     id_batida: Optional[int] = None
@@ -11,6 +11,19 @@ class BatidaDto(BaseModel):
     id_zona: int
     voluntarios: Optional[List[int]] = []
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id_batida": 1,
+                    "nombre": "Batida en el Parque Natural",
+                    "latitud": 40.4168,
+                    "longitud": -3.7038,
+                    "id_zona": 2,
+                }
+            ]
+        }
+    }
     @classmethod
     def fromEntity(cls, entidad: BatidaEntity) -> BatidaDto:
         return cls(

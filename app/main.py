@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from rest import InformesRestController
+from rest import InformesRestController,BatidasRestController
+
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -7,7 +8,6 @@ from apscheduler.triggers.cron import CronTrigger
 import logging
 import pytz
 from utils.eventos import enviar_recordatorios_diarios
-from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO)
 
@@ -36,6 +36,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="API Informes Batidas Voluntariado",lifespan=lifespan)
 
 app.include_router(InformesRestController.router, prefix="/voluntarios", tags=["Voluntarios"])
+
+app.include_router(BatidasRestController.router,prefix="/riverspain",tags=["Batidas"])
+
 
 @app.get("/")
 def read_root():

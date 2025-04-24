@@ -11,7 +11,12 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build: .
     restart: always
@@ -20,8 +25,12 @@ services:
     environment:
       # Actualiza la URL de conexión a la base de datos para que use el servicio "db"
       DATABASE_URL: "mysql+mysqlconnector://root:root@db/informes"
+    volumes:
+      - ./app:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   db_data:

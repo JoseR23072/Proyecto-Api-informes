@@ -7,7 +7,7 @@ class BatidaEntity(SQLModel, table=True):
     latitud:float
     longitud:float
     id_zona:int
-    voluntarios:list[int]
+    voluntarios: str = Field(default="[]")
     estado: bool = Field(default=False)  # Indica si el evento ha terminado
     fecha_evento: date  #
     descripcion: str

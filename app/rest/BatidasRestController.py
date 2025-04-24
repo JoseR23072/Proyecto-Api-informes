@@ -6,29 +6,29 @@ from typing import Annotated
 
 router=APIRouter()
 
-BatidaService=Annotated[BatidaService,Depends(BatidaService)]
+ServiceBatida=Annotated[BatidaService,Depends(BatidaService)]
 
 
 @router.post("/batida")
-def crear_batida(batida:BatidaDto, service:BatidaService=Depends()) -> BatidaDto:
+def crear_batida(batida:BatidaDto, service:ServiceBatida) -> BatidaDto:
     service.crear_batida(batida)
-    return BatidaDto
+    return service.crear_batida(batida)
 
 
-
+    
 @router.get("/batida")
 def get_batida():
     return None
 
-@router.put("/batida")
+@router.patch("/batida")
 def modificar_batida():
     return None
 
-@router.put("/batida/apuntarse")
+@router.patch("/batida/apuntarse")
 def apuntarse_batida():
     return None
 
-@router.put("/batida/desapuntarse")
+@router.patch("/batida/desapuntarse")
 def desapuntarse_batida():
     return None
 

@@ -5,6 +5,8 @@ import time
 
 
 DATABASE_URL = getenv("DATABASE_URL", "mysql+mysqlconnector://user:password@localhost/dbname")
+
+""" 
 ##############################
 #CODIGO PROVISIONAL --> ARREGLAR EL DOCKER FILE CODIGO QUE NO SE ENTIENDA
 engine = None
@@ -28,6 +30,7 @@ while retries > 0:
 if engine is None:
     raise Exception("No se pudo conectar a la base de datos después de varios intentos.")
 
-#########################
+######################### """
+engine = create_engine(DATABASE_URL)  # echo=False por defecto
 def get_session():
     return Session(engine)
