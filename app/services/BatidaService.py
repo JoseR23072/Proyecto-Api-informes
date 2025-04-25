@@ -4,6 +4,9 @@ import requests
 from schemas.Batida import BatidaDto
 from repository.BatidaRepository import BatidaRepository
 from fastapi import Depends
+import asyncio
+from services.MicroserviciosService import MicroserviciosService
+from typing import List,Dict
 
 class BatidaService:
     def __init__(self, repository: BatidaRepository = Depends()):
@@ -18,17 +21,35 @@ class BatidaService:
     def ver_batida(self, id_batida: int):
         entidad=self.repository.buscar_batida(id_batida)
 
-        return BatidaDto.fromEntity
+        return BatidaDto.fromEntity(entidad)
 
-    def ver_batidas(self):
-        # A implementar
-        return None
+    async def ver_batidas(self) -> List[BatidaDto]:
+        entidades = self.repository.ver_batidas()  
+
+        batidas = [BatidaDto.fromEntity(entidad) for entidad in entidades]
+
+        #se crea un set para que no se repitan los ids
+        all_ids = set()
+        for b in batidas:
+            all_ids.update(b.voluntarios or [])
+
+        voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
+
+        # 5. Indexar por número de voluntario para acceso rápido
+        voluntario_map: Dict[str, dict] = {
+            v.numeroVoluntario: v for v in voluntarios_info
+        }
+
+        for b in batidas:
+            lista_info_voluntarios=[voluntario_map.get(str(vol_id)) for vol_id in (b.voluntarios or [])]
+            b.voluntarios=lista_info_voluntarios
+        return batidas
 
     def modificar_batida(self):
         # A implementar
         return None
 
-    def apuntarse(self,id_batida:int,id_voluntario:str):
+    async def apuntarse(self,id_batida:int,id_voluntario:str):
         batida = self.repository.buscar_batida(id_batida)
 
         if not batida:
@@ -46,13 +67,25 @@ class BatidaService:
         # Guardar los cambios como string
         batida.voluntarios = str(lista_voluntarios)
 
-        self.repository.actualizar_voluntarios(id_batida, str(lista_voluntarios))
+        actualizar_bdd = asyncio.to_thread(
+        self.repository.actualizar_voluntarios, id_batida, batida.voluntarios
+    )
 
-        return None
+        obtener_info_voluntarios = MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
+
+        datos_batida, datos_voluntarios = await asyncio.gather(actualizar_bdd, obtener_info_voluntarios)
+
+        return {
+        "batida": datos_batida,
+        "voluntarios": datos_voluntarios
+    }
+
+
     def desapuntarse(self):
         # A implementar
         return None
 
-    def comprobar_voluntario(self):
+    def comprobar_voluntario(self,id_batida:int,id_voluntario:str):
+        
         # A implementar
         return None

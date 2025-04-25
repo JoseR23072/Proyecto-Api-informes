@@ -1,6 +1,7 @@
 from settings import settings  # si usas Pydantic
 from schemas.Voluntario import VoluntarioDto
 from typing import List
+import httpx
 class MicroserviciosService:
     @staticmethod
     async def obtener_datos_voluntarios(ids: List[str]) -> List[VoluntarioDto]:
