@@ -14,3 +14,4 @@ yagmail
 apscheduler
 python-dotenv
 httpx #fetch asincronos
+pydantic-settings

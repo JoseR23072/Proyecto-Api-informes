@@ -8,14 +8,16 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: informes
     ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
+      - "33000:3306"
+    
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - riverspain 
+
 
   api:
     build: .
@@ -25,12 +27,19 @@ services:
     environment:
       # Actualiza la URL de conexión a la base de datos para que use el servicio "db"
       DATABASE_URL: "mysql+mysqlconnector://root:root@db/informes"
+      MICROSERVICIOS_URL: "http://microservicio-gateway:8080/riverspain"
     volumes:
       - ./app:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - riverspain
+      - externo
 
-volumes:
-  db_data:
+networks:
+  riverspain:  
+    driver: bridge
+  externo:
+    external: true

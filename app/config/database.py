@@ -1,12 +1,24 @@
 from sqlmodel import create_engine, Session,SQLModel
-from os import getenv
-from sqlalchemy.exc import OperationalError
-import time
+from sqlalchemy import text
+from config.settings import settings
+import os
+
+engine = create_engine(settings.DATABASE_URL)  # echo=False por defecto
+
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+    # Ruta del archivo SQL
+    sql_file_path = os.path.join(os.path.dirname(__file__), "data.sql")
+
+    # Leer y ejecutar el archivo SQL
+    with engine.connect() as connection:
+        with open(sql_file_path, "r") as f:
+            sql_statement = f.read()
+            if sql_statement.strip():  # Asegurarse de que no está vacío
+                connection.execute(text(sql_statement))
+            connection.commit()
 
 
-DATABASE_URL = getenv("DATABASE_URL", "mysql+mysqlconnector://user:password@localhost/dbname")
-
-
-engine = create_engine(DATABASE_URL)  # echo=False por defecto
 def get_session():
-    return Session(engine)
+    with Session(engine) as session:
+        yield session

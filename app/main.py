@@ -8,6 +8,7 @@ from apscheduler.triggers.cron import CronTrigger
 import logging
 import pytz
 from utils.eventos import enviar_recordatorios_diarios
+from config.database import engine,create_db_and_tables
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,9 +20,11 @@ scheduler = AsyncIOScheduler()
 scheduler.add_job(enviar_recordatorios_diarios, CronTrigger(hour=22, minute=28, timezone=pytz.timezone("Europe/Madrid")))
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Lógica de inicio: se inicia el scheduler.
+    create_db_and_tables()
     scheduler.start()
     logging.info("Scheduler iniciado.")
     

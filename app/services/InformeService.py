@@ -1,11 +1,14 @@
+# services/BatidaService.py
+import ast
 from schemas.Voluntario import VoluntarioDto
-from repository.InformeRepository import guardar_voluntario
-
-def create_voluntario(voluntario: VoluntarioDto):
-    entidad_voluntario= guardar_voluntario(voluntario.model_dump())
+from fastapi import Depends
+import asyncio
+from services.MicroserviciosService import MicroserviciosService
+from typing import List,Dict
+import json
+class BatidaService:
     
-    # Convertimos la entidad de SQLModel a un diccionario
-    voluntario_dict = entidad_voluntario.model_dump()  # Usar dict() si usas SQLModel
+    def generar_informe(self, zona_id: int) :
+        return None
 
-    # Validamos el objeto convertido usando Pydantic (VoluntarioDto)
-    return VoluntarioDto(**voluntario_dict)
+

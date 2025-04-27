@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 # from app.schemas.Voluntario import VoluntarioCreate, VoluntarioRead
 from schemas.Voluntario import VoluntarioDto
-from services.InformeService import create_voluntario
 from utils import recordatorio
 
 router = APIRouter()
 
-@router.post("/prueba", response_model=VoluntarioDto)
-def crear_voluntario(voluntario: VoluntarioDto):
-    return create_voluntario(voluntario)
+@router.post("/informes/{zona_id}", response_model=VoluntarioDto)
+def generar_informe(zona_id: int):
+    
+    return None
 
 @router.get("/recordatorio")
 def obtener_recordatorio():

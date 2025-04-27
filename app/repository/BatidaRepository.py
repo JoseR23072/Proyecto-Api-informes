@@ -30,7 +30,9 @@ class BatidaRepository:
             batida_existente.longitud = batida.longitud
             batida_existente.id_zona = batida.id_zona
             batida_existente.voluntarios = batida.voluntarios
-
+            batida_existente.fecha_evento = batida.fecha_evento
+            batida_existente.descripcion = batida.descripcion
+            batida_existente.estado = batida.estado
             self.session.commit()
             self.session.refresh(batida_existente)
             return batida_existente
@@ -48,5 +50,10 @@ class BatidaRepository:
 
         return None
   
-    def comprobarVoluntario(self, id_batida:int, id_voluntario:int):
-        return None
+    def eliminar_batida(self,id_batida:int) -> bool:
+        batida = self.session.get(BatidaEntity, id_batida)
+        if batida:
+            self.session.delete(batida)
+            self.session.commit()
+            return True
+        return False
