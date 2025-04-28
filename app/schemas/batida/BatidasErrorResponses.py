@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-
+from typing import List, Dict, Any,Optional
 class ValidationErrorResponse(BaseModel):
     code: int = Field(40000, description="Código específico para errores de validación")
     message: str = Field(..., description="Mensaje explicativo del error de validación")
@@ -11,8 +10,8 @@ class ValidationErrorResponse(BaseModel):
             "examples": [
                 {
                     "code": 40000,
-                    "message": "Los datos enviados no cumplen con el formato requerido.",
-                    "details": "El campo 'nombre' es obligatorio."
+                    "message": "Validación de negocio fallida.",
+                    "details": "La zona con ID 999 no existe."
                 }
             ]
         }
@@ -45,8 +44,71 @@ class NotFoundErrorResponse(BaseModel):
             "examples": [
                 {
                     "code": 40400,
-                    "message": "Recurso solicitado no encontrado.",
-                    "details": "La ruta '/batidas/999' no existe."
+                    "message": "La batida con ID 999 no fue encontrada.",
+                    "details": "No existe ninguna batida con ese identificador en la base de datos."
+                }
+            ]
+        }
+    }
+
+class NotBatidasFoundResponse(BaseModel):
+    code: int = Field(40401, description="Código específico indicando que no existen batidas registradas")
+    message: str = Field(..., description="Mensaje indicando que no se encontraron batidas")
+    details: Optional[str] = Field(None, description="Detalles adicionales sobre la ausencia de batidas (opcional)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40401,
+                    "message": "No se encontraron batidas registradas.",
+                    "details": "Actualmente no hay ninguna batida en el sistema."
+                }
+            ]
+        }
+    }
+
+class UnprocessableEntityResponse(BaseModel):
+    code: int = Field(42200, description="Código de error específico para errores de validación de entrada")
+    message: str = Field("Error de validación en la solicitud.", description="Descripción del error")
+    details: List[Dict[str, Any]] = Field(..., description="Detalles de los errores de validación")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 42200,
+                    "message": "Error de validación en la solicitud.",
+                    "details": [
+                        {
+                            "loc": ["body", "nombre"],
+                            "msg": "field required",
+                            "type": "value_error.missing"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+
+class UnprocessableEntityResponseGet(BaseModel):
+    code: int = Field(42200, description="Código de error específico para errores de validación de entrada")
+    message: str = Field("Error de validación en la solicitud.", description="Descripción del error")
+    details: List[Dict[str, Any]] = Field(..., description="Detalles de los errores de validación")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 42200,
+                    "message": "Error de validación en la solicitud.",
+                    "details": [
+                        {
+                            "loc": ["path", "id_batida"],
+                            "msg": "value is not a valid integer",
+                            "type": "type_error.integer"
+                        }
+                    ]
                 }
             ]
         }

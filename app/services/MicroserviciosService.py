@@ -27,7 +27,7 @@ class MicroserviciosService:
             response = await client.get(
 
             )
-            return []
+            return None
         
         
 if __name__ == "__main__":

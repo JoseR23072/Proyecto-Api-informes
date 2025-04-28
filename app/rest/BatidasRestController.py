@@ -4,11 +4,12 @@ from schemas.Batida import BatidaDto,BatidaDTO2
 from services.BatidaService import BatidaService
 from typing import Annotated,List
 
-from schemas.batida.BatidaResponseDto import BatidaResponseDto
+from schemas.batida.BatidaResponseDto import BatidaResponseDto,BatidaGetResponseDto
 from schemas.batida.BatidaCreateDto import BatidaCreateDto
-from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse
+from schemas.batida.BatidaUpdateDto import BatidaUpdateDto
+from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse,UnprocessableEntityResponse,UnprocessableEntityResponseGet,NotBatidasFoundResponse
 
-router=APIRouter(prefix="/batidas",
+router=APIRouter(
     tags=["Batidas"],  
     responses={
         404: {"description": "Recurso no encontrado", "model": NotFoundErrorResponse},
@@ -25,9 +26,10 @@ ServiceBatida=Annotated[BatidaService,Depends(BatidaService)]
     responses={
         201: {"description": "Batida creada exitosamente", "model": BatidaResponseDto},
         400: {"description": "Datos inválidos o error de validación", "model": ValidationErrorResponse},
+        422: {"description": "Error de validación de datos de entrada", "model": UnprocessableEntityResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     })
-def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> BatidaResponseDto:
+async def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> BatidaResponseDto:
     """
     Endpoint para crear una nueva batida.
 
@@ -48,17 +50,108 @@ def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> BatidaRespo
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
     
-@router.get("/batida/{id_batida}", response_model=BatidaDto)
-async def get_batida(id_batida: int, service: ServiceBatida) -> BatidaDto:
-    return await service.ver_batida(id_batida)
+@router.get(
+    "/batida/{id_batida}",
+    response_model=BatidaResponseDto,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener batida por ID",
+    description="Recupera los detalles de una batida específica dado su ID.",
+    responses={
+        200: {"description": "Batida encontrada exitosamente", "model": BatidaGetResponseDto},
+        404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
+        422: {"description": "Error de validación de entrada", "model": UnprocessableEntityResponseGet},
+        500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
+    }
+)
+async def get_batida(id_batida: int, service: ServiceBatida) -> BatidaResponseDto:
+    """
+    Endpoint para obtener una batida específica.
 
-@router.get("/batidas", response_model=List[BatidaDto])
-async def get_batidas(service: ServiceBatida) -> List[BatidaDto]:
-    return await service.ver_batidas()
+    Args:
+        id_batida (int): ID de la batida a consultar.
+        service (ServiceBatida): Servicio inyectado de batidas.
 
-@router.patch("/batida/")    
-def modificar_batida(batida: BatidaDTO2, service: ServiceBatida):
-    return service.modificar_batida(batida)
+    Returns:
+        BatidaDto: Información de la batida solicitada.
+
+    Raises:
+        HTTPException: Si la batida no se encuentra (404) o ocurre un error interno (500).
+    """
+    try:
+        return await service.ver_batida(id_batida)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@router.get("/batidas", response_model=List[BatidaGetResponseDto],
+    status_code=status.HTTP_200_OK,
+    summary="Listar todas las batidas",
+    description="Obtiene una lista de todas las batidas registradas.",
+    responses={
+        200: {"description": "Lista de batidas obtenida exitosamente", "model": List[BatidaGetResponseDto]},
+        404: {"description": "No se encontraron batidas", "model": NotBatidasFoundResponse},
+        500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
+    })
+async def get_batidas(service: ServiceBatida) -> List[BatidaGetResponseDto]:
+    """
+    Endpoint para obtener todas las batidas.
+
+    Args:
+        service (ServiceBatida): Servicio de batidas inyectado.
+
+    Returns:
+        List[BatidaGetResponseDto]: Lista de batidas encontradas.
+
+    Raises:
+        HTTPException: Si ocurre un error interno (500).
+    """
+    try:
+        batidas = await service.ver_batidas()
+        if not batidas:
+            raise HTTPException(status_code=404, detail="No se encontraron batidas.")
+        return batidas
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+
+
+@router.patch("/batida",
+    response_model=BatidaResponseDto,
+    status_code=status.HTTP_200_OK,
+    summary="Modificar una batida existente",
+    description=(
+        "Aplica cambios parciales a una batida existente. Solo se modifican los cambios en el cuerpo de la petición"
+    ),
+    responses={
+        200: {"description": "Batida modificada exitosamente", "model": BatidaResponseDto},
+        400: {"description": "Error de validación de negocio", "model": ValidationErrorResponse},
+        404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
+        422: {"description": "Error de validación de entrada", "model": UnprocessableEntityResponse},
+        500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
+    })    
+async def modificar_batida(batida: BatidaUpdateDto, service: ServiceBatida) -> BatidaResponseDto:
+    """
+    Endpoint para modificar una batida existente.
+
+    - **id_batida**: ID de la batida a modificar
+    - El resto de campos son opcionales y se actualizan si se incluyen en el JSON.
+
+    Raises:
+        HTTPException 400: Errores de validación de negocio (zona o voluntarios no existen).
+        HTTPException 404: Si la batida no existe.
+        HTTPException 422: Error de validación de tipo o formato en la entrada.
+        HTTPException 500: Error inesperado.
+    """
+    try:
+        return await service.modificar_batida(batida)
+    except ValueError as e:
+        msg = str(e)
+        if msg.startswith("La batida con ID"):
+            raise HTTPException(status_code=404, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
 @router.patch("/batida/{id_batida}/{codigo_voluntario}/apuntarse")

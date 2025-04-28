@@ -1,6 +1,8 @@
 # services/BatidaService.py
 import ast
 from schemas.Batida import BatidaDto,BatidaDTO2
+from schemas.batida.BatidaDTO import BatidaDTO
+from schemas.batida.BatidaUpdateDto import BatidaUpdateDto
 from schemas.Voluntario import VoluntarioDto
 
 from schemas.batida.BatidaCreateDto import BatidaCreateDto
@@ -17,30 +19,34 @@ class BatidaService:
     def __init__(self, repository: BatidaRepository = Depends()):
         self.repository = repository
 
-    def crear_batida(self, batida_dto: BatidaCreateDto) -> BatidaResponseDto:
-        # Convertimos el DTO en entidad para guardarlo
+    async def crear_batida(self, batida_dto: BatidaCreateDto) -> BatidaResponseDto:
+        #Validamos que la id de la zona existe
+        zona = await MicroserviciosService.obtener_datos_zona(batida_dto.id_zona)
+        if not zona:
+            raise ValueError("La zona con el ID proporcionado no existe.")
+        
         entidad_batida = batida_dto.to_entity()
         entidad_creada = self.repository.crear_batida(entidad_batida)
+        return BatidaResponseDto.from_entity(entidad_creada, [])
 
-        return BatidaResponseDto.from_entity(entidad_creada,[])
-
-    async def ver_batida(self, id_batida: int) -> BatidaDto:
-        entidad=self.repository.buscar_batida(id_batida)
-
-        lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
-        print(lista_voluntarios)
-        obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
-        print(obtener_info_voluntarios)
-        entidad.voluntarios=obtener_info_voluntarios
+    async def ver_batida(self, id_batida: int) -> BatidaResponseDto:
+        entidad = self.repository.buscar_batida(id_batida)
+        if not entidad:
+            raise ValueError("La batida con el ID proporcionado no existe.")
         
-        return BatidaDto.fromEntity(entidad)
+        lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
+        ######### FALTA OBTENER INFORMACION DE LA ZONA
+        obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
+        
+        return BatidaResponseDto.from_entity(entidad,obtener_info_voluntarios)
 
-    async def ver_batidas(self) -> List[BatidaDto]:
+    async def ver_batidas(self) -> List[BatidaResponseDto]:
+        ###FALTA ZONAS
         entidades = self.repository.ver_batidas()
         if not entidades:
             return []
 
-        lista_dto=[BatidaDTO2.fromEntity(entidad) for entidad in entidades]
+        lista_dto=[BatidaDTO.fromEntity(entidad) for entidad in entidades]
         #se crea un set para que no se repitan los ids
         all_ids = set()
         for b in lista_dto:
@@ -53,21 +59,61 @@ class BatidaService:
         voluntario_map: Dict[str, VoluntarioDto] = {
             v.numerovoluntario: v for v in voluntarios_info
         }
-
+        print(voluntario_map)
         lista_batidas=[]
         for b in lista_dto:
-            print("hola mundo")
             voluntarios_list = ast.literal_eval(b.voluntarios)
             lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntarios_list]
-            batida_dto = BatidaDto.from_dto2(b, lista_info_voluntarios)
-            lista_batidas.append(batida_dto)
+            response = BatidaResponseDto(
+                id_batida=b.id_batida,
+                nombre=b.nombre,
+                latitud=b.latitud,
+                longitud=b.longitud,
+                id_zona=b.id_zona,
+                voluntarios=lista_info_voluntarios,
+                estado=b.estado,
+                fecha_evento=b.fecha_evento,
+                descripcion=b.descripcion
+            )
+            lista_batidas.append(response)
     
         return lista_batidas
 
-    def modificar_batida(self,batida:BatidaDTO2):
-        entidad=BatidaDTO2.toEntity(batida)
-        entidad=self.repository.modificar_batida(entidad)
-        return BatidaDTO2.fromEntity(entidad)
+    async def modificar_batida(self,dto:BatidaUpdateDto):
+        # 1) Verificar que la batida existe
+        entidad = self.repository.buscar_batida(dto.id_batida)
+        if not entidad:
+            raise ValueError(f"La batida con ID {dto.id_batida} no existe.")
+
+        # 2) Validar zona si viene modificada
+        if dto.id_zona is not None:
+            zona = await MicroserviciosService.obtener_datos_zona(dto.id_zona)
+            if not zona:
+                raise ValueError(f"La zona con ID {dto.id_zona} no existe.")
+
+        # 3) Validar lista de voluntarios si se envía
+        if dto.voluntarios is not None:
+            info_vols = await MicroserviciosService.obtener_datos_voluntarios(dto.voluntarios)
+            if len(info_vols) != len(dto.voluntarios):
+                raise ValueError("Alguno de los IDs de voluntario no existe.")
+
+            # Guardamos la lista serializada
+            entidad.voluntarios = json.dumps(dto.voluntarios)
+
+        # 4) Aplicar cambios parciales (solo los campos no None)
+        for field, value in dto.model_dump().items():
+            if field == "id_batida" or value is None:
+                continue
+            setattr(entidad, field, value)
+
+        # 5) Persistir
+        entidad_modificada = self.repository.modificar_batida(entidad)
+
+        # 6) Convertir lista de voluntarios al objeto DTO
+        lista_ids = json.loads(entidad_modificada.voluntarios or "[]")
+        info_vols_final = await MicroserviciosService.obtener_datos_voluntarios(lista_ids)
+
+        return BatidaResponseDto.from_entity(entidad_modificada, info_vols_final)
 
     async def apuntarse(self,id_batida:int,id_voluntario:str):
         batida = self.repository.buscar_batida(id_batida)

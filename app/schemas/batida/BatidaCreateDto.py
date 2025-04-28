@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date
 from models.Batida import BatidaEntity  # Asumimos que esta es tu entidad
-import json
 
 class BatidaCreateDto(BaseModel):
     nombre: str = Field(..., min_length=1, description="Nombre de la batida")

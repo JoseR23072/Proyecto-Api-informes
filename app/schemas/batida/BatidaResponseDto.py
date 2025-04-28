@@ -50,3 +50,41 @@ class BatidaResponseDto(BaseModel):
             fecha_evento=entidad.fecha_evento,
             descripcion=entidad.descripcion
         )
+    
+class BatidaGetResponseDto(BatidaResponseDto):
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id_batida": 1,
+                    "nombre": "Batida en el Parque Natural",
+                    "latitud": 40.4168,
+                    "longitud": -3.7038,
+                    "id_zona": 2,
+                    "voluntarios": [
+                        {
+      "id": 1,
+      "nombre": "Ana",
+      "apellidos": "Maria Hernandez",
+      "email": "AnaMariaHernandez@example.com",
+      "dni": "123456K",
+      "numerovoluntario": "Mi123456789",
+      "rol": "voluntario"
+    },
+    {
+      "id": 2,
+      "nombre": "Miguel",
+      "apellidos": "Fernandez",
+      "email": "mg@example.com",
+      "dni": "123456K",
+      "numerovoluntario": "IM123456789",
+      "rol": "voluntario"
+    }
+                    ],
+                    "estado": False,
+                    "fecha_evento": "2025-04-26",
+                    "descripcion": "Batida de limpieza y reforestación"
+                }
+            ]
+        }
+    }

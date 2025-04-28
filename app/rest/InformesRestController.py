@@ -1,8 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,BackgroundTasks
 from fastapi.responses import FileResponse
 # from app.schemas.Voluntario import VoluntarioCreate, VoluntarioRead
 from schemas.Voluntario import VoluntarioDto
 from utils import recordatorio
+import os
+
+def eliminar_archivo(path: str):
+    if os.path.exists(path):
+        print("Se va a eliminar ela rchivo")
+        os.remove(path)
+        print(f"archivo eliminado correctamente: {path}")
 
 router = APIRouter()
 
@@ -29,7 +36,8 @@ def obtener_recordatorio():
         longitud=longitud,
         ciudad=ciudad
     )
-
+    # Programamos la eliminación del archivo una vez se termine de enviar
+    #BackgroundTasks.add_task(eliminar_archivo,path_pdf)
     return FileResponse(
         path=path_pdf,
         media_type='application/pdf',
