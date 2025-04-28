@@ -30,7 +30,7 @@ class BatidaService:
         lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
         print(lista_voluntarios)
         obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
-
+        print(obtener_info_voluntarios)
         entidad.voluntarios=obtener_info_voluntarios
         
         return BatidaDto.fromEntity(entidad)

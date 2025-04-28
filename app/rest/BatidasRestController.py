@@ -1,15 +1,21 @@
-from fastapi import APIRouter,Depends,HTTPException,status
+from fastapi import APIRouter,Depends,HTTPException,status,Request
+from fastapi.responses import JSONResponse
 from schemas.Batida import BatidaDto,BatidaDTO2
 from services.BatidaService import BatidaService
 from typing import Annotated,List
 
 from schemas.batida.BatidaResponseDto import BatidaResponseDto
 from schemas.batida.BatidaCreateDto import BatidaCreateDto
-from schemas.batida.BatidasErrorResponse import ErrorResponse
+from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse
 
-router=APIRouter()
+router=APIRouter(prefix="/batidas",
+    tags=["Batidas"],  
+    responses={
+        404: {"description": "Recurso no encontrado", "model": NotFoundErrorResponse},
+    })
 
 ServiceBatida=Annotated[BatidaService,Depends(BatidaService)]
+
 
 
 @router.post("/batida",response_model=BatidaResponseDto,
@@ -18,8 +24,8 @@ ServiceBatida=Annotated[BatidaService,Depends(BatidaService)]
     description="Crea una batida con los datos proporcionados y retorna la batida creada con su ID generado.",
     responses={
         201: {"description": "Batida creada exitosamente", "model": BatidaResponseDto},
-        400: {"description": "Datos inválidos o error de validación", "model": ErrorResponse},
-        500: {"description": "Error interno del servidor", "model": ErrorResponse}
+        400: {"description": "Datos inválidos o error de validación", "model": ValidationErrorResponse},
+        500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     })
 def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> BatidaResponseDto:
     """

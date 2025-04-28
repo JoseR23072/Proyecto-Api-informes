@@ -36,10 +36,10 @@ services:
         condition: service_healthy
     networks:
       - riverspain
-      - externo
 
 networks:
-  riverspain:  
-    driver: bridge
-  externo:
+  networks:
+  riverspain:
     external: true
+    name: riverspain_network
+  
