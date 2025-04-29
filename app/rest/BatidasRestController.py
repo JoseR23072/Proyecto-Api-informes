@@ -7,6 +7,7 @@ from typing import Annotated,List
 from schemas.batida.BatidaResponseDto import BatidaResponseDto,BatidaGetResponseDto
 from schemas.batida.BatidaCreateDto import BatidaCreateDto
 from schemas.batida.BatidaUpdateDto import BatidaUpdateDto
+from schemas.batida.ApuntarseResponseDto import ApuntarseResponseDto
 from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse,UnprocessableEntityResponse,UnprocessableEntityResponseGet,NotBatidasFoundResponse
 
 router=APIRouter(
@@ -124,7 +125,7 @@ async def get_batidas(service: ServiceBatida) -> List[BatidaGetResponseDto]:
         "Aplica cambios parciales a una batida existente. Solo se modifican los cambios en el cuerpo de la petición"
     ),
     responses={
-        200: {"description": "Batida modificada exitosamente", "model": BatidaResponseDto},
+        200: {"description": "Batida modificada exitosamente", "model": BatidaUpdateDto},
         400: {"description": "Error de validación de negocio", "model": ValidationErrorResponse},
         404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
         422: {"description": "Error de validación de entrada", "model": UnprocessableEntityResponse},
@@ -154,9 +155,52 @@ async def modificar_batida(batida: BatidaUpdateDto, service: ServiceBatida) -> B
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 
-@router.patch("/batida/{id_batida}/{codigo_voluntario}/apuntarse")
-async def apuntarse_batida(id_batida: int, codigo_voluntario: str, service: ServiceBatida):
-    return await service.apuntarse(id_batida, codigo_voluntario)
+@router.patch(
+    "/batida/{id_batida}/{codigo_voluntario}/apuntarse",
+    response_model=ApuntarseResponseDto,
+    status_code=status.HTTP_200_OK,
+    summary="Apuntarse a una batida",
+    description="Permite a un voluntario apuntarse a la batida indicada agregando su código a la lista.",
+    responses={
+        200: {"description": "Voluntario apuntado exitosamente", "model": ApuntarseResponseDto},
+        400: {"description": "Error de validación de negocio (voluntario duplicado)", "model": ValidationErrorResponse},
+        404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
+        422: {"description": "Error de validación de entrada (ID o código inválido)", "model": UnprocessableEntityResponse},
+        500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
+    }
+)
+
+async def apuntarse_batida(
+    id_batida: int,
+    codigo_voluntario: str,
+    service: ServiceBatida
+) -> ApuntarseResponseDto:
+    """
+    Endpoint para apuntar un voluntario a una batida existente.
+
+    Args:
+        id_batida (int): ID de la batida.
+        codigo_voluntario (str): Código del voluntario a apuntar.
+
+    Returns:
+        ApuntarseResponseDto: DTO con la lista actualizada y mensaje de confirmación.
+
+    Raises:
+        HTTPException 400: Voluntario ya apuntado.
+        HTTPException 404: Batida no existe.
+        HTTPException 422: ID inválido.
+        HTTPException 500: Error interno.
+    """
+    try:
+        return await service.apuntarse(id_batida, codigo_voluntario)
+    except ValueError as e:
+        msg = str(e)
+        if msg.startswith("La batida con ID"):
+            raise HTTPException(status_code=404, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 
 @router.patch("/batida/{id_batida}/{codigo_voluntario}/desapuntarse")
 async def desapuntarse_batida(id_batida: int, codigo_voluntario: str, service: ServiceBatida):
@@ -171,3 +215,4 @@ def eliminar_batida(id_batida: int, service: ServiceBatida):
     respuesta=service.eliminar_batida(id_batida)
 
     return respuesta
+

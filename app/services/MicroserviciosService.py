@@ -25,9 +25,17 @@ class MicroserviciosService:
     async def obtener_datos_zona(id_zona:int) -> ZonaDto:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-
+                f"{settings.MICROSERVICIOS_URL}/zonas/verZonaInfo",
+                params={"id": id_zona}
             )
-            return None
+            response.raise_for_status()
+            data = response.json()
+            if not data:
+                return None
+
+            return ZonaDto(
+                
+            )
         
         
 if __name__ == "__main__":

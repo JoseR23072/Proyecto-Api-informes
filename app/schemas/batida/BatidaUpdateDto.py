@@ -10,9 +10,9 @@ class BatidaUpdateDto(BaseModel):
     id_zona: Optional[int] = Field(None, gt=0, description="Nuevo ID de la zona asociada")
     fecha_evento: Optional[date] = Field(None, description="Nueva fecha del evento")
     descripcion: Optional[str] = Field(None, min_length=1, description="Nueva descripción")
-    voluntarios: Optional[List[str]] = Field(
+    voluntarios: Optional[str] = Field(
         None,
-        description="Lista de IDs de voluntarios asignados a la batida"
+        description="Lista de Codigos de voluntarios asignados a la batida"
     )
     estado: Optional[bool] = Field(None, description="Nuevo estado de la batida (activa/inactiva)")
 
@@ -22,12 +22,12 @@ class BatidaUpdateDto(BaseModel):
                 {
                     "id_batida": 1,
                     "nombre": "Nombre de la batida actualizada",
+                    "descripcion": "Nueva descripción de la batida",
                     "latitud": 40.1234,
                     "longitud": -3.5678,
                     "id_zona": 3,
                     "fecha_evento": "2025-05-10",
-                    "descripcion": "Nueva descripción de la batida",
-                    "voluntarios": ["MI123455","MI9328234"],
+                    "voluntarios": '["MI123455","MI9328234"]',
                     "estado": True
                 }
             ]
