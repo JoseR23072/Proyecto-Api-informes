@@ -113,3 +113,65 @@ class UnprocessableEntityResponseGet(BaseModel):
             ]
         }
     }
+
+class VoluntarioDuplicadoResponse(BaseModel):
+    code: int = Field(40010, description="Código específico para voluntario duplicado")
+    message: str = Field(..., description="Mensaje indicando que el voluntario ya está apuntado")
+    details: Optional[str] = Field(None, description="Detalles adicionales (ID o contexto)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40010,
+                    "message": "El voluntario V123 ya está apuntado a la batida.",
+                    "details": "Código de voluntario duplicado en la lista."
+                }
+            ]
+        }
+    }
+
+class BatidaNotFoundResponse(BaseModel):
+    code: int = Field(40410, description="Código específico para batida no encontrada")
+    message: str = Field(..., description="Mensaje explicando que la batida no existe")
+    details: Optional[str] = Field(None, description="Detalles adicionales del error")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40410,
+                    "message": "La batida con ID 5 no existe.",
+                    "details": "Imposible apuntar voluntario a batida inexistente."
+                }
+            ]
+        }
+    }
+
+class PathParamValidationErrorResponse(BaseModel):
+    code: int = Field(42210, description="Código específico para errores de validación de path parameters")
+    message: str = Field("Error de validación de parámetros de ruta.", description="Descripción general del error")
+    details: List[Dict[str, Any]] = Field(..., description="Detalles de la validación de parámetros")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 42210,
+                    "message": "Error de validación de parámetros de ruta.",
+                    "details": [
+                        {
+                            "loc": ["path", "id_batida"],
+                            "msg": "value is not a valid integer",
+                            "type": "type_error.integer"
+                        },
+                        {
+                            "loc": ["path", "codigo_voluntario"],
+                            "msg": "string does not match regex \"^V[0-9]+$\"",
+                            "type": "value_error.str.regex"
+                        }
+                    ]
+                }
+            ]
+        }
+    }

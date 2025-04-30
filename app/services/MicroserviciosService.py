@@ -1,7 +1,7 @@
 from config.settings import settings  # si usas Pydantic
 from schemas.Voluntario import VoluntarioDto
 from schemas.Zona import ZonaDto
-from typing import List
+from typing import List,Optional
 import httpx
 import asyncio  # Lo necesitas para lanzar la corrutina
 
@@ -12,7 +12,7 @@ class MicroserviciosService:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{settings.MICROSERVICIOS_URL}/voluntarios/verVoluntariosNum",
-                params={"ids": ",".join(ids)}
+                params={"numeros": ",".join(ids)}
             )
             response.raise_for_status()
             data = response.json()
@@ -22,7 +22,7 @@ class MicroserviciosService:
             return [VoluntarioDto(**v) for v in data]
 
     @staticmethod
-    async def obtener_datos_zona(id_zona:int) -> ZonaDto:
+    async def obtener_datos_zona(id_zona:int) -> Optional[ZonaDto]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{settings.MICROSERVICIOS_URL}/zonas/verZonaInfo",
@@ -33,10 +33,20 @@ class MicroserviciosService:
             if not data:
                 return None
 
-            return ZonaDto(
-                
-            )
+            return ZonaDto(**data)
+    @staticmethod
+    async def obtener_datos_voluntario(id: str) -> Optional[VoluntarioDto]:
         
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.MICROSERVICIOS_URL}/voluntarios/verVoluntarioNum",
+                json={"numerovoluntario": id}
+            )
+        if response.status_code == 204 or not response.content:
+            return None
+        data = response.json()
+        
+        return VoluntarioDto(**data)
         
 if __name__ == "__main__":
     async def main():
