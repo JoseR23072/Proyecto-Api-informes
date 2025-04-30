@@ -27,7 +27,7 @@ class BatidaUpdateDto(BaseModel):
                     "longitud": -3.5678,
                     "id_zona": 3,
                     "fecha_evento": "2025-05-10",
-                    "voluntarios": '["MI123455","MI9328234"]',
+                    "voluntarios": "['Mi709629567','Mi70962956']",
                     "estado": True
                 }
             ]

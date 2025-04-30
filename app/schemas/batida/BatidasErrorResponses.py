@@ -36,16 +36,19 @@ class InternalServerErrorResponse(BaseModel):
 
 class NotFoundErrorResponse(BaseModel):
     code: int = Field(40400, description="Código específico para recurso no encontrado")
-    message: str = Field(..., description="Mensaje explicando que el recurso solicitado no fue encontrado")
-    details: Optional[str] = Field(None, description="Detalles adicionales sobre el error")
+    message: str = Field(
+        ..., 
+        description="Mensaje explicativo indicando qué recurso no fue encontrado"
+    )
+    details: Optional[str] = Field(None, description="Detalles adicionales (opcional)")
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
                     "code": 40400,
-                    "message": "La batida con ID 999 no fue encontrada.",
-                    "details": "No existe ninguna batida con ese identificador en la base de datos."
+                    "message": "Recurso no encontrado.",
+                    "details": "El recurso solicitado no existe."
                 }
             ]
         }
@@ -148,6 +151,19 @@ class BatidaNotFoundResponse(BaseModel):
         }
     }
 
+class BatidaDeleteNotFoundResponse(BatidaNotFoundResponse):
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40410,
+                    "message": "La batida con ID 5 no existe.",
+                    "details": "No se puede eliminar una batida que no existe en el sistema."
+                }
+            ]
+        }
+    }
+
 class PathParamValidationErrorResponse(BaseModel):
     code: int = Field(42210, description="Código específico para errores de validación de path parameters")
     message: str = Field("Error de validación de parámetros de ruta.", description="Descripción general del error")
@@ -171,6 +187,97 @@ class PathParamValidationErrorResponse(BaseModel):
                             "type": "value_error.str.regex"
                         }
                     ]
+                }
+            ]
+        }
+    }
+
+class VoluntarioValidationErrorResponse(BaseModel):
+    code: int = Field(42200, description="Código para errores de validación de body")
+    message: str = Field("Error de validación en la solicitud.", description="Mensaje general del error")
+    details: List[Dict[str, Any]] = Field(..., description="Lista de errores de validación Pydantic")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 42200,
+                    "message": "Error de validación en la solicitud.",
+                    "details": [
+                        {
+                            "loc": ["body", "codigo_voluntario"],
+                            "msg": "field required",
+                            "type": "value_error.missing"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+
+class VoluntarioNotFoundResponse(BaseModel):
+    code: int = Field(40011, description="Código específico para voluntario no encontrado")
+    message: str = Field(..., description="Mensaje explicativo de que el voluntario no existe")
+    details: Optional[str] = Field(None, description="Detalles adicionales del error (opcional)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40011,
+                    "message": "El voluntario con código V123 no existe.",
+                    "details": "No se encontró ningún voluntario con ese código en el sistema."
+                }
+            ]
+        }
+    }
+
+
+class PathParamBatidaValidationErrorResponse(BaseModel):
+    code: int = Field(
+        42210,
+        description="Código específico para errores de validación de path parameters en delete de batida"
+    )
+    message: str = Field(
+        "Error de validación de parámetros de ruta.",
+        description="Descripción general del error de validación en los parámetros de la ruta"
+    )
+    details: List[Dict[str, Any]] = Field(
+        ...,
+        description="Lista de detalles con la ubicación, mensaje y tipo de cada error de validación"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 42210,
+                    "message": "Error de validación de parámetros de ruta.",
+                    "details": [
+                        {
+                            "loc": ["path", "id_batida"],
+                            "msg": "value is not a valid integer",
+                            "type": "type_error.integer"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+
+
+class BusinessValidationErrorResponse(BaseModel):
+    code: int = Field(40010, description="Código específico para errores de validación de negocio")
+    message: str = Field(..., description="Mensaje explicativo del error de negocio")
+    details: Optional[str] = Field(None, description="Detalles adicionales del error (opcional)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "code": 40010,
+                    "message": "La batida con el ID proporcionado no existe.",
+                    "details": None
                 }
             ]
         }

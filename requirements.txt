@@ -15,3 +15,5 @@ apscheduler
 python-dotenv
 httpx #fetch asincronos
 pydantic-settings
+
+py-eureka-client

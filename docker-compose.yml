@@ -22,14 +22,25 @@ services:
   api:
     build: .
     restart: always
+    container_name: microservicio-batidas
     ports:
       - "8000:8000"
     environment:
       # Actualiza la URL de conexión a la base de datos para que use el servicio "db"
       DATABASE_URL: "mysql+mysqlconnector://root:root@db/informes"
       MICROSERVICIOS_URL: "http://microservicio-gateway:8080/riverspain"
+      EUREKA_SERVER: "http://microservicio-eureka:8761/eureka"
+      EUREKA_APP_NAME: "msvc-batidas"
+      INSTANCE_IP: microservicio-batidas
+      INSTANCE_PORT: 8000
+      HEALTH_CHECK_PATH: "/health"
+      STATUS_PAGE_PATH: "/docs"
+
+
     volumes:
       - ./app:/app
+
+    
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db:

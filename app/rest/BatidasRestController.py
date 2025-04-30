@@ -1,13 +1,12 @@
 from fastapi import APIRouter,Depends,HTTPException,status,Request
 from fastapi.responses import JSONResponse
-from schemas.Batida import BatidaDto,BatidaDTO2
 from services.BatidaService import BatidaService
 from typing import Annotated,List
 from schemas.batida.BatidaResponseDto import BatidaResponseDto,BatidaGetResponseDto
 from schemas.batida.BatidaCreateDto import BatidaCreateDto
 from schemas.batida.BatidaUpdateDto import BatidaUpdateDto
 from schemas.batida.ApuntarseResponseDto import ApuntarseResponseDto
-from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse,UnprocessableEntityResponse,UnprocessableEntityResponseGet,NotBatidasFoundResponse,VoluntarioDuplicadoResponse,BatidaNotFoundResponse,PathParamValidationErrorResponse
+from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse,UnprocessableEntityResponse,UnprocessableEntityResponseGet,NotBatidasFoundResponse,VoluntarioDuplicadoResponse,BatidaNotFoundResponse,PathParamValidationErrorResponse,VoluntarioValidationErrorResponse,VoluntarioNotFoundResponse,PathParamBatidaValidationErrorResponse,BatidaDeleteNotFoundResponse,BusinessValidationErrorResponse
 from schemas.batida.BatidaDesapuntarseResponseDto import DesapuntarseResponseDto,VoluntarioNoApuntadoResponse
 from schemas.batida.BatidaDeleteResponseDto import EliminarBatidaResponseDto
 from schemas.batida.BatidasVoluntarioRequestDto import BatidasVoluntarioRequestDto
@@ -47,7 +46,7 @@ async def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> Batid
         HTTPException: Si los datos son inválidos (400) o ocurre un error interno (500).
     """
     try:
-        return service.crear_batida(batida)
+        return await service.crear_batida(batida)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -61,7 +60,10 @@ async def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> Batid
     description="Recupera los detalles de una batida específica dado su ID.",
     responses={
         200: {"description": "Batida encontrada exitosamente", "model": BatidaGetResponseDto},
-        404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
+        400: {
+            "description": "Error de validación de negocio (batida no existe)",
+            "model": BusinessValidationErrorResponse
+        },
         422: {"description": "Error de validación de entrada", "model": UnprocessableEntityResponseGet},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     }
@@ -83,7 +85,7 @@ async def get_batida(id_batida: int, service: ServiceBatida) -> BatidaResponseDt
     try:
         return await service.ver_batida(id_batida)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
@@ -92,8 +94,7 @@ async def get_batida(id_batida: int, service: ServiceBatida) -> BatidaResponseDt
     summary="Listar todas las batidas",
     description="Obtiene una lista de todas las batidas registradas.",
     responses={
-        200: {"description": "Lista de batidas obtenida exitosamente", "model": List[BatidaGetResponseDto]},
-        404: {"description": "No se encontraron batidas", "model": NotBatidasFoundResponse},
+        200: {"description": "Lista de batidas obtenida exitosamente (puede estar vacía)", "model": List[BatidaGetResponseDto]},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     })
 async def get_batidas(service: ServiceBatida) -> List[BatidaGetResponseDto]:
@@ -110,10 +111,7 @@ async def get_batidas(service: ServiceBatida) -> List[BatidaGetResponseDto]:
         HTTPException: Si ocurre un error interno (500).
     """
     try:
-        batidas = await service.ver_batidas()
-        if not batidas:
-            raise HTTPException(status_code=404, detail="No se encontraron batidas.")
-        return batidas
+        return await service.ver_batidas()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
@@ -129,7 +127,6 @@ async def get_batidas(service: ServiceBatida) -> List[BatidaGetResponseDto]:
     responses={
         200: {"description": "Batida modificada exitosamente", "model": BatidaUpdateDto},
         400: {"description": "Error de validación de negocio", "model": ValidationErrorResponse},
-        404: {"description": "Batida no encontrada", "model": NotFoundErrorResponse},
         422: {"description": "Error de validación de entrada", "model": UnprocessableEntityResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     })    
@@ -150,8 +147,6 @@ async def modificar_batida(batida: BatidaUpdateDto, service: ServiceBatida) -> B
         return await service.modificar_batida(batida)
     except ValueError as e:
         msg = str(e)
-        if msg.startswith("La batida con ID"):
-            raise HTTPException(status_code=404, detail=msg)
         raise HTTPException(status_code=400, detail=msg)
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
@@ -166,7 +161,6 @@ async def modificar_batida(batida: BatidaUpdateDto, service: ServiceBatida) -> B
     responses={
         200: {"description": "Voluntario apuntado exitosamente", "model": ApuntarseResponseDto},
         400: {"description": "Voluntario ya apuntado", "model": VoluntarioDuplicadoResponse},
-        404: {"description": "Batida no encontrada", "model": BatidaNotFoundResponse},
         422: {"description": "Error de validación de parámetros de ruta", "model": PathParamValidationErrorResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     }
@@ -189,7 +183,6 @@ async def apuntarse_batida(
 
     Raises:
         HTTPException 400: Voluntario ya apuntado.
-        HTTPException 404: Batida no existe.
         HTTPException 422: ID inválido.
         HTTPException 500: Error interno.
     """
@@ -197,8 +190,6 @@ async def apuntarse_batida(
         return await service.apuntarse(id_batida, codigo_voluntario)
     except ValueError as e:
         msg = str(e)
-        if msg.startswith("La batida con ID") or msg.startswith("El voluntario con código"):
-            raise HTTPException(status_code=404, detail=msg)
         raise HTTPException(status_code=400, detail=msg)
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
@@ -213,7 +204,6 @@ async def apuntarse_batida(
     responses={
         200: {"description": "Voluntario desapuntado exitosamente", "model": DesapuntarseResponseDto},
         400: {"description": "El voluntario no estaba apuntado a la batida", "model": VoluntarioNoApuntadoResponse},
-        404: {"description": "Batida no encontrada", "model": BatidaNotFoundResponse},
         422: {"description": "Error de validación de parámetros de ruta", "model": PathParamValidationErrorResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     }
@@ -227,8 +217,6 @@ async def desapuntarse_batida(
         return await service.desapuntarse(id_batida, codigo_voluntario)
     except ValueError as e:
         msg = str(e)
-        if msg.startswith("La batida con ID") or msg.startswith("El voluntario con código"):
-            raise HTTPException(status_code=404, detail=msg)
         raise HTTPException(status_code=400, detail=msg)
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
@@ -242,9 +230,15 @@ async def desapuntarse_batida(
     summary="Listar batidas de un voluntario",
     description="Devuelve las batidas a las que está apuntado el voluntario indicado.",
     responses={
-        200: {"description": "Lista de batidas obtenida", "model": List[BatidaGetResponseDto]},
-        400: {"description": "Voluntario no existe o no tiene batidas", "model": ValidationErrorResponse},
-        422: {"description": "Error de validación en el cuerpo de la petición", "model": ValidationErrorResponse},
+        200: {
+            "description": "Lista de batidas obtenida (vacía si no hay datos)",
+            "model": List[BatidaGetResponseDto]
+        },
+        400: {
+            "description": "Voluntario no existe",
+            "model": VoluntarioNotFoundResponse
+        },
+        422: {"description": "Error de validación en el cuerpo de la petición", "model": VoluntarioValidationErrorResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     }
 )
@@ -255,13 +249,8 @@ async def ver_batidas_voluntario(
     try:
         return await service.ver_batidas_por_voluntario(request)
     except ValueError as e:
-        msg = str(e)
-        # Distinguimos si el voluntario no existe o no tiene batidas
-        if msg.startswith("El voluntario con código"):
-            raise HTTPException(status_code=400, detail=msg)
-        if msg.startswith("No hay batidas para el voluntario"):
-            raise HTTPException(status_code=404, detail=msg)
-        raise HTTPException(status_code=400, detail=msg)
+        # Aquí solo valido existencia de voluntario
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
@@ -276,8 +265,8 @@ async def ver_batidas_voluntario(
     description="Elimina la batida con el ID especificado del sistema.",
     responses={
         200: {"description": "Batida eliminada exitosamente", "model": EliminarBatidaResponseDto},
-        404: {"description": "Batida no encontrada", "model": BatidaNotFoundResponse},
-        422: {"description": "Error de validación de parámetros de ruta", "model": PathParamValidationErrorResponse},
+        400: {"description": "Batida inexistente", "model": BatidaDeleteNotFoundResponse},
+        422: {"description": "Error de validación de parámetros de ruta", "model": PathParamBatidaValidationErrorResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     }
 )
@@ -288,6 +277,6 @@ def eliminar_batida(
     try:
         return service.eliminar_batida(id_batida)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")

@@ -38,6 +38,7 @@ class BatidaService:
         
         lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
         ######### FALTA OBTENER INFORMACION DE LA ZONA
+        
         obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
         
         return BatidaResponseDto.from_entity(entidad,obtener_info_voluntarios)
@@ -83,17 +84,18 @@ class BatidaService:
         except Exception as e:
             logging.exception("Error inesperado en ver_batidas")
             raise e
-    async def modificar_batida(self,dto:BatidaUpdateDto):
+    async def modificar_batida(self,dto:BatidaUpdateDto)->BatidaResponseDto:
        #verificamos que la batida existe
         entidad = self.repository.buscar_batida(dto.id_batida)
         if not entidad:
             raise ValueError(f"La batida con ID {dto.id_batida} no existe.")
 
-        # 2) Validar zona si viene modificada
-        """ if dto.id_zona is not None:
+        # Validar zona si se modifica
+        if dto.id_zona is not None:
             zona = await MicroserviciosService.obtener_datos_zona(dto.id_zona)
             if not zona:
-                raise ValueError(f"La zona con ID {dto.id_zona} no existe.") """
+                raise ValueError(f"La zona con ID {dto.id_zona} no existe.")
+
 
         # validamos que la lista de voluntarios no contenga ids incorrectos
         if dto.voluntarios is not None:
@@ -198,7 +200,7 @@ class BatidaService:
                 filtradas.append(entidad)
 
         if not filtradas:
-            raise ValueError(f"No hay batidas para el voluntario {dto.codigo_voluntario}.")
+            return []
 
         # 3) Recolectar todos los voluntarios de esas batidas para obtener info
         all_ids = set()
@@ -212,8 +214,8 @@ class BatidaService:
 
         # 4) Construir lista de DTOs
         lista_filtrada: List[BatidaResponseDto] = []
-        for b in lista_filtrada:
-            voluntarios_list = ast.literal_eval(b.voluntarios) if b.voluntarios else []
+        for ent in filtradas:
+            voluntarios_list = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
             lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntarios_list]
             response = BatidaResponseDto(
                 id_batida=ent.id,

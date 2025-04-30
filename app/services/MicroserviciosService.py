@@ -1,5 +1,6 @@
 from config.settings import settings  # si usas Pydantic
 from schemas.Voluntario import VoluntarioDto
+from schemas.Ciudad import CiudadDto
 from schemas.Zona import ZonaDto
 from typing import List,Optional
 import httpx
@@ -28,12 +29,21 @@ class MicroserviciosService:
                 f"{settings.MICROSERVICIOS_URL}/zonas/verZonaInfo",
                 params={"id": id_zona}
             )
-            response.raise_for_status()
-            data = response.json()
-            if not data:
+            if response.status_code == 204 or not response.content:
                 return None
+            data = response.json()
+            ciudad = CiudadDto(**data["ciudad"])
+            voluntarios = [VoluntarioDto(**vol) for vol in data.get("voluntariosZona", [])]
 
-            return ZonaDto(**data)
+            
+            return ZonaDto(
+                id=data["id"],
+                nombre=data["nombre"],
+                latitud=data["latitud"],
+                longitud=data["longitud"],
+                ciudad=ciudad,
+                voluntariosZona=voluntarios
+            )
     @staticmethod
     async def obtener_datos_voluntario(id: str) -> Optional[VoluntarioDto]:
         
