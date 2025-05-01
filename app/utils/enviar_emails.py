@@ -1,16 +1,13 @@
 import yagmail
 import os
-import dotenv
-dotenv.load_dotenv()
+from config.settings import settings
+import logging
 
-EMAIL=os.getenv("EMAIL","correo@gmail.com")
-PASSWORD=os.getenv("EMAIL_PASSWORD","password")
-
-def enviar_email(pdf_file_path, destinatario):
-    print(EMAIL)
-    print(PASSWORD)
+def enviar_email_recordatorio(pdf_file_path, destinatario):
+    logging.info(f"El email es : {settings.EMAIL}")
+    logging.info(f"La contraseña del envio del correo es : {settings.EMAIL_PASSWORD}")
     # Autenticación de Gmail
-    yag = yagmail.SMTP(user=EMAIL, password=PASSWORD)
+    yag = yagmail.SMTP(user=settings.EMAIL, password=settings.EMAIL_PASSWORD)
 
     asunto="Recordatorio Batida RiverSpain: ¡Nos encontramos en la acción!"
     cuerpo_email = """\
@@ -46,4 +43,4 @@ if __name__== "__main__":
     "Recordatorio_Ana_Martínez.pdf")
 
     print(recordatorio)
-    enviar_email(pdf_file_path=recordatorio,destinatario="ana@example.com")
+    enviar_email_recordatorio(pdf_file_path=recordatorio,destinatario="ana@example.com")

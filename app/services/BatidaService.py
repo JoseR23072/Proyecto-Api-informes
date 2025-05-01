@@ -13,7 +13,7 @@ from schemas.batida.BatidaDeleteResponseDto import EliminarBatidaResponseDto
 from repository.BatidaRepository import BatidaRepository
 from models.Batida import BatidaEntity
 from fastapi import Depends
-import asyncio
+from datetime import date
 from services.MicroserviciosService import MicroserviciosService
 from typing import List,Dict
 import json
@@ -29,19 +29,20 @@ class BatidaService:
         
         entidad_batida = batida_dto.to_entity()
         entidad_creada = self.repository.crear_batida(entidad_batida)
-        return BatidaResponseDto.from_entity(entidad_creada, [])
+        return BatidaResponseDto.from_entity(entidad_creada, [],zona)
 
     async def ver_batida(self, id_batida: int) -> BatidaResponseDto:
         entidad = self.repository.buscar_batida(id_batida)
         if not entidad:
             raise ValueError("La batida con el ID proporcionado no existe.")
-        
+        zona = await MicroserviciosService.obtener_datos_zona(entidad.id_zona)
+        if not zona:
+            raise ValueError("La zona con el ID proporcionado no existe.")
         lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
-        ######### FALTA OBTENER INFORMACION DE LA ZONA
         
         obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
         
-        return BatidaResponseDto.from_entity(entidad,obtener_info_voluntarios)
+        return BatidaResponseDto.from_entity(entidad,obtener_info_voluntarios,zona)
 
     async def ver_batidas(self) -> List[BatidaResponseDto]:
         ###FALTA ZONAS
@@ -67,12 +68,13 @@ class BatidaService:
             for b in lista_dto:
                 voluntarios_list = ast.literal_eval(b.voluntarios)
                 lista_info_voluntarios=[voluntario_map[vol_id] for vol_id in voluntarios_list if vol_id in voluntario_map]
+                zona = await MicroserviciosService.obtener_datos_zona(b.id_zona)
                 response = BatidaResponseDto(
                     id_batida=b.id_batida,
                     nombre=b.nombre,
                     latitud=b.latitud,
                     longitud=b.longitud,
-                    id_zona=b.id_zona,
+                    zona=zona,
                     voluntarios=lista_info_voluntarios,
                     estado=b.estado,
                     fecha_evento=b.fecha_evento,
@@ -120,7 +122,7 @@ class BatidaService:
         lista_ids = json.loads(entidad_modificada.voluntarios or "[]")
         info_vols_final = await MicroserviciosService.obtener_datos_voluntarios(lista_ids)
 
-        return BatidaResponseDto.from_entity(entidad_modificada, info_vols_final)
+        return BatidaResponseDto.from_entity(entidad_modificada, info_vols_final,zona)
 
     async def apuntarse(self,id_batida:int,codigo_voluntario:str) -> ApuntarseResponseDto:
         entidad = self.repository.buscar_batida(id_batida)
@@ -210,19 +212,23 @@ class BatidaService:
 
         voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
         # map por numerovoluntario
-        voluntario_map: Dict[str, VoluntarioDto] = {v.numerovoluntario: v for v in voluntarios_info}
+        voluntario_map: Dict[str, VoluntarioDto] = {
+            v.numerovoluntario: v for v in voluntarios_info
+        }
 
         # 4) Construir lista de DTOs
         lista_filtrada: List[BatidaResponseDto] = []
         for ent in filtradas:
             voluntarios_list = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntarios_list]
+            lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntarios_list if vol_id in voluntario_map]
+            
+            zona = await MicroserviciosService.obtener_datos_zona(ent.id_zona)
             response = BatidaResponseDto(
                 id_batida=ent.id,
                 nombre=ent.nombre,
                 latitud=ent.latitud,
                 longitud=ent.longitud,
-                id_zona=ent.id_zona,
+                zona=zona,
                 voluntarios=lista_info_voluntarios,
                 estado=ent.estado,
                 fecha_evento=ent.fecha_evento,
@@ -243,5 +249,40 @@ class BatidaService:
             id_batida=id_batida,
             message="Batida eliminada exitosamente"
         )
+    
+    async def buscar_batidas_por_fecha(self,fecha:date) -> List[BatidaResponseDto]:
+        entidades:List[BatidaEntity]=self.repository.buscar_batidas_por_fecha(fecha)
         
+        all_ids = set()
+        for ent in entidades:
+            codigos_voluntarios = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
+            all_ids.update(codigos_voluntarios)
+
+
+        voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
+
+        voluntario_map: Dict[str,VoluntarioDto]={
+            vol.numerovoluntario:vol for vol in voluntarios_info
+        }
         
+        lista_completa:List[BatidaResponseDto]=[]
+
+        for entidad in entidades:
+            voluntario_codigos=ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
+            lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntario_codigos if vol_id in voluntario_map]
+
+            zona = await MicroserviciosService.obtener_datos_zona(ent.id_zona)
+            response = BatidaResponseDto(
+                id_batida=ent.id,
+                nombre=ent.nombre,
+                latitud=ent.latitud,
+                longitud=ent.longitud,
+                zona={},
+                voluntarios=lista_info_voluntarios,
+                estado=ent.estado,
+                fecha_evento=ent.fecha_evento,
+                descripcion=ent.descripcion
+            )
+            lista_completa.append(response)
+
+        return lista_completa

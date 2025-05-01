@@ -224,7 +224,7 @@ async def desapuntarse_batida(
 
 
 @router.post(
-    "/verBatidasVoluntario",
+    "/batidas/verBatidasVoluntario",
     response_model=List[BatidaGetResponseDto],
     status_code=status.HTTP_200_OK,
     summary="Listar batidas de un voluntario",

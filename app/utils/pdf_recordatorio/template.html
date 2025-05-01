@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <title>Recordatorio de Batida</title>
     <style>
+        /* Reset básico */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #033E6B;
             background-color: #E6F4F9;
             margin: 0;
-            padding: 2rem;
+            padding: 0;
         }
 
         .container {
@@ -17,6 +24,8 @@
             border-radius: 12px;
             padding: 2rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin: 2rem auto;
+            max-width: 800px;
         }
 
         .header {
@@ -26,11 +35,30 @@
 
         .header h1 {
             color: #026C9F;
+            font-size: 2rem;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+            color: #033E6B;
         }
 
         .content {
-            font-size: 1rem;
-            line-height: 1.6;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .content p {
+            margin-bottom: 1rem;
+        }
+
+        .content ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .content li {
+            margin-bottom: 0.5rem;
         }
 
         .map {
@@ -42,6 +70,7 @@
             width: 100%;
             max-width: 500px;
             border-radius: 8px;
+            page-break-inside: avoid;
         }
 
         .footer {
@@ -51,6 +80,17 @@
             color: #666;
         }
 
+        /* Estilos para impresión */
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        /* Asegurar que los enlaces sean texto plano en PDF */
+        a {
+            color: #033E6B;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +107,7 @@
             <ul>
                 <li><strong>Fecha:</strong> {{ fecha }}</li>
                 <li><strong>Ciudad:</strong> {{ ciudad }}</li>
-                <li><strong>Punto de encuentro:</strong> <a href="{{ direccion }}">{{ direccion }}</a></li>
+                <li><strong>Punto de encuentro:</strong> {{ direccion }}</li>
             </ul>
 
             <p>Adjunto encontrarás un archivo PDF con los detalles de la actividad. ¡Te esperamos con energía y muchas ganas de seguir cuidando nuestros ríos y mares!</p>

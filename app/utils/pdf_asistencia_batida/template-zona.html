@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Informe – {{ batida.nombre }}</title>
+  <title>Informe – {{ zona.nombre }}</title>
   <style>
     /* Reset básico */
     * {
@@ -18,47 +18,47 @@
       background-color: #fafafa;
       color: #333;
       padding: 0;
-      
     }
 
     .container {
-  margin: 0 auto;       /* centra en horizontal */
-  margin-top: 0;        /* ya no estamos usando margin:0 todo */
-  max-width: 800px;      /* limita el ancho para lectura cómoda */
-  background: #fff;
-  border-bottom-left-radius: 8px;   /* esquinas inferiores redondeadas */
-  border-bottom-right-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
+      margin: 0 auto;
+      margin-top: 0;
+      max-width: 800px;
+      background: #fff;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
 
     .header {
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  display: flex;
-  align-items: center;
-  padding: 20px 40px;
-  /* redondeamos solo las esquinas superiores */
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #2c3e50;
+      color: #ecf0f1;
+      display: flex;
+      align-items: center;
+      padding: 20px 40px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
 
-.header div {
-  height: 80px;
-  width: 80px;
-  object-fit: cover;
-  margin-right: 20px;
-  background: #ecf0f1;
-  padding: 5px;
-  border-radius: 50%;
-  border: 2px solid #ecf0f1;
-}
-.header img{
-    width: 100%;
-    border-radius: 50%;
-}
+    .header div {
+      height: 80px;
+      width: 80px;
+      object-fit: cover;
+      margin-right: 20px;
+      background: #ecf0f1;
+      padding: 5px;
+      border-radius: 50%;
+      border: 2px solid #ecf0f1;
+    }
+
+    .header img {
+      width: 100%;
+      border-radius: 50%;
+    }
+
     .header h1 {
       font-size: 1.8rem;
     }
@@ -75,20 +75,11 @@
     .summary-item {
       flex: 1 1 220px;
     }
+
     .summary-item strong {
       display: block;
       margin-bottom: 5px;
       color: #2c3e50;
-    }
-
-    .description {
-      padding: 20px;
-      background: #f7f7f7;
-      border-bottom: 1px solid #eee;
-    }
-
-    .description p {
-      margin-bottom: 0.5rem;
     }
 
     table {
@@ -96,14 +87,14 @@
       border-collapse: collapse;
       margin: 20px 0;
       font-size: 0.95rem;
-      table-layout: fixed; /* Fija el diseño de la tabla */
+      table-layout: fixed;
     }
 
     th, td {
       padding: 12px 10px;
       text-align: left;
-      word-wrap: break-word; /* Permite que el texto largo se divida */
-      overflow-wrap: break-word; /* Compatibilidad adicional */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     /* Definir anchos de columnas */
@@ -117,7 +108,7 @@
     thead {
       background-color: #2c3e50;
       color: #fff;
-      display: table-header-group; /* Repite el encabezado en cada página */
+      display: table-header-group;
     }
 
     tbody tr:nth-child(even) {
@@ -129,17 +120,20 @@
     }
 
     tr {
-      page-break-inside: avoid; /* Evita que las filas se rompan entre páginas */
+      page-break-inside: avoid;
     }
+
     .voluntarios-title {
       padding: 0 20px;
       margin-top: 20px;
     }
+
     .voluntarios-title h2 {
       font-size: 1.2rem;
       color: #2c3e50;
       font-weight: 600;
     }
+
     /* Configuración de la página */
     @page {
       size: A4;
@@ -157,39 +151,35 @@
     <!-- Cabecera con logo y título -->
     <div class="header">
       <div><img src="{{ ruta_logo }}" alt="Logo RiverSpain" /></div>
-      <h1>Informe de Batida</h1>
+      <h1>Informe de Zona</h1>
     </div>
 
-    <!-- Datos clave: batida, zona y ciudad, fecha -->
+    <!-- Datos clave: zona, ciudad, coordenadas, número de voluntarios -->
     <div class="summary">
       <div class="summary-item">
-        <strong>Nombre Batida</strong>
-        {{ batida.nombre }}
-      </div>
-      <div class="summary-item">
-        <strong>Zona</strong>
-        {{ batida.zona.nombre }}
+        <strong>Nombre Zona</strong>
+        {{ zona.nombre }}
       </div>
       <div class="summary-item">
         <strong>Ciudad</strong>
-        {{ batida.zona.ciudad.nombre }}
+        {{ zona.ciudad.nombre }}
       </div>
       <div class="summary-item">
-        <strong>Fecha Evento</strong>
-        {{ batida.fecha_evento.strftime('%Y-%m-%d') }}
+        <strong>Coordenadas</strong>
+        Lat: {{ zona.latitud | round(4) }}, Lon: {{ zona.longitud | round(4) }}
+      </div>
+      <div class="summary-item">
+        <strong>Número de Voluntarios</strong>
+        {{ zona.voluntariosZona | length }}
       </div>
     </div>
 
-    <!-- Descripción de la batida -->
-    <div class="description">
-      <p><strong>Descripción:</strong> {{ batida.descripcion }}</p>
-      <p><strong>Estado:</strong> {{ 'Activa' if batida.estado else 'Inactiva' }}</p>
-    </div>
     <!-- Título de la lista de voluntarios -->
     <div class="voluntarios-title">
-        <h2>Lista de voluntarios</h2>
-      </div>
-    <!-- Tabla de asistentes -->
+      <h2>Lista de Voluntarios</h2>
+    </div>
+
+    <!-- Tabla de voluntarios -->
     <table>
       <thead>
         <tr>
@@ -202,7 +192,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for v in batida.voluntarios %}
+        {% for v in zona.voluntariosZona %}
         <tr>
           <td>{{ v.id }}</td>
           <td>{{ v.nombre }} {{ v.apellidos }}</td>
@@ -212,10 +202,10 @@
           <td>{{ v.fechacreacion.strftime('%Y-%m-%d') if v.fechacreacion else '-' }}</td>
         </tr>
         {% endfor %}
-        {% if not batida.voluntarios %}
+        {% if not zona.voluntariosZona %}
         <tr>
           <td colspan="6" style="text-align:center; padding:20px;">
-            No hay asistentes registrados.
+            No hay voluntarios registrados.
           </td>
         </tr>
         {% endif %}

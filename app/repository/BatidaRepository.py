@@ -2,7 +2,8 @@ from models.Batida import BatidaEntity
 from config.database import get_session
 from fastapi import Depends
 from sqlmodel import Session,select
-
+from typing import List
+from datetime import date
 
 
 class BatidaRepository:
@@ -57,3 +58,9 @@ class BatidaRepository:
             self.session.commit()
             return True
         return False
+
+    def buscar_batidas_por_fecha(self,fecha:date) -> List[BatidaEntity]:
+        statement=select(BatidaEntity).where(BatidaEntity.fecha_evento==fecha)
+
+        resultado=self.session.exec(statement).all()
+        return resultado

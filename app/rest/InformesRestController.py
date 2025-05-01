@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends,BackgroundTasks
+from fastapi import APIRouter, Depends,BackgroundTasks,HTTPException
 from fastapi.responses import FileResponse
-# from app.schemas.Voluntario import VoluntarioCreate, VoluntarioRead
-from schemas.Voluntario import VoluntarioDto
-from utils import recordatorio
+from schemas.batida.BatidasErrorResponses import NotFoundErrorResponse
+from typing import Literal
+from services.InformeService import InformeService
 import os
 
 def eliminar_archivo(path: str):
@@ -11,35 +11,73 @@ def eliminar_archivo(path: str):
         os.remove(path)
         print(f"archivo eliminado correctamente: {path}")
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Informes"],  
+    responses={
+        404: {"description": "Recurso no encontrado", "model": NotFoundErrorResponse},
+    }
+)
 
-@router.post("/informes/{zona_id}", response_model=VoluntarioDto)
-def generar_informe(zona_id: int):
+@router.get(
+    "/informe/batida",
+    summary="Generar informe de asistentes a batida",
+    responses={
+        200: {
+            "content": {"application/pdf": {}}, 
+            "description": "PDF o Excel generado correctamente"
+        },
+        400: {"description": "Batida no existe"},
+        500: {"description": "Error interno del servidor"}
+    }
+)
+async def generar_informe_batida(
+    id_batida: int,
+    tipo: Literal["pdf", "excel"],
+    service: InformeService = Depends()
+):
+    try:
+        ruta = await service.generar_informe_batida(id_batida, tipo)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
     
-    return None
+    return FileResponse(path=ruta, media_type=(
+        "application/pdf" if tipo == "pdf" else 
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ), filename=ruta.split(os.sep)[-1])
 
-@router.get("/recordatorio")
-def obtener_recordatorio():
-    # Datos de prueba
-    nombre_voluntario = "Laura Martínez"
-    nombre_batida = "Batida Playa del Faro"
-    fecha = "2025-04-10"
-    ciudad = "Málaga"
-    latitud = 36.7213
-    longitud = -4.4214
 
-    path_pdf = recordatorio.generar_pdf_recordatorio(
-        nombre_voluntario=nombre_voluntario,
-        nombre_batida=nombre_batida,
-        fecha=fecha,
-        latitud=latitud,
-        longitud=longitud,
-        ciudad=ciudad
-    )
-    # Programamos la eliminación del archivo una vez se termine de enviar
-    #BackgroundTasks.add_task(eliminar_archivo,path_pdf)
-    return FileResponse(
-        path=path_pdf,
-        media_type='application/pdf',
-        filename=path_pdf.split("/")[-1]
-    )
+
+
+@router.get(
+    "/informe/zona",
+    summary="Generar informe de voluntarios en zona",
+    responses={
+        200: {
+            "content": {"application/pdf": {}}, 
+            "description": "PDF o Excel generado correctamente"
+        },
+        400: {"description": "Zona no existe"},
+        500: {"description": "Error interno del servidor"}
+    }
+)
+async def generar_informe_zona(
+    id_zona: int,
+    tipo: Literal["pdf", "excel"],
+    service: InformeService = Depends()
+):
+    try:
+        ruta = await service.generar_informe_zona(id_zona, tipo)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+    
+    return FileResponse(path=ruta, media_type=(
+        "application/pdf" if tipo == "pdf" else 
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ), filename=ruta.split(os.sep)[-1])
+
+
+

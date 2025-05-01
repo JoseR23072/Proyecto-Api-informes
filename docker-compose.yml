@@ -25,6 +25,9 @@ services:
     container_name: microservicio-batidas
     ports:
       - "8000:8000"
+
+    env_file:
+       - .env  
     environment:
       # Actualiza la URL de conexión a la base de datos para que use el servicio "db"
       DATABASE_URL: "mysql+mysqlconnector://root:root@db/informes"

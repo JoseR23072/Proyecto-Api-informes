@@ -6,6 +6,13 @@ class Settings(BaseSettings):
     MICROSERVICIOS_URL: str = "http://localhost:8080/riverspain"  # Valor por defecto
     DATABASE_URL: str = "mysql+mysqlconnector://root:root@localhost:33000/informes"
 
+    #Api google para generar mapa
+    API_GOOGLE: str="APIKEY"
+
+    #Email del emisor de los recordatorios
+    EMAIL:str="correo@gmail.com"
+    EMAIL_PASSWORD:str="password"
+
     ### VARIABLES PARA EUREKA
     EUREKA_SERVER: str = "http://localhost:8761/eureka"
     EUREKA_APP_NAME: str = "msvc-batidas"

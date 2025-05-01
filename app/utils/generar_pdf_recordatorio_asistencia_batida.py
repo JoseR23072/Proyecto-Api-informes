@@ -2,11 +2,9 @@ import os
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import dotenv
-dotenv.load_dotenv()
+from config.settings import settings
 
-# Tu clave de API de Google
 
-GOOGLE_MAPS_API_KEY = os.getenv("API_GOOGLE","API_KEY")
 # Obtener la ruta absoluta del directorio del script actual (app/utils)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,7 +19,7 @@ def obtener_url_mapa(lat, lng):
     return (
         f"https://maps.googleapis.com/maps/api/staticmap?"
         f"center={lat},{lng}&zoom=15&size=600x400&markers=color:blue%7C{lat},{lng}"
-        f"&key={GOOGLE_MAPS_API_KEY}"
+        f"&key={settings.API_GOOGLE}"
     )
 def obtener_enlace_como_llegar(lat, lng):
     return f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}"

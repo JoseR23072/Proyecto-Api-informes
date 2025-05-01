@@ -3,13 +3,13 @@ from typing import List
 from datetime import date
 from schemas.Voluntario import VoluntarioDto
 from models.Batida import BatidaEntity
-
+from schemas.Zona import ZonaDto
 class BatidaResponseDto(BaseModel):
     id_batida: int = Field(..., description="ID generado de la batida")
     nombre: str = Field(..., description="Nombre de la batida")
     latitud: float = Field(..., description="Latitud de la ubicación")
     longitud: float = Field(..., description="Longitud de la ubicación")
-    id_zona: int = Field(..., description="ID de la zona asociada")
+    zona: ZonaDto = Field(..., description="ID de la zona asociada")
     voluntarios: List[VoluntarioDto] = Field(..., description="Lista de los voluntarios")
     estado: bool = Field(..., description="Estado de la batida")
     fecha_evento: date = Field(..., description="Fecha del evento")
@@ -35,7 +35,7 @@ class BatidaResponseDto(BaseModel):
     }
 
     @classmethod
-    def from_entity(cls, entidad: BatidaEntity, voluntarios: List[VoluntarioDto]) -> "BatidaResponseDto":
+    def from_entity(cls, entidad: BatidaEntity, voluntarios: List[VoluntarioDto],zona:ZonaDto) -> "BatidaResponseDto":
         """
         Convierte una entidad BatidaEntity en un BatidaResponseDto, usando una lista de VoluntarioDto.
         """
@@ -44,11 +44,11 @@ class BatidaResponseDto(BaseModel):
             nombre=entidad.nombre,
             latitud=entidad.latitud,
             longitud=entidad.longitud,
-            id_zona=entidad.id_zona,
             voluntarios=voluntarios,
             estado=entidad.estado,
             fecha_evento=entidad.fecha_evento,
-            descripcion=entidad.descripcion
+            descripcion=entidad.descripcion,
+            zona=zona
         )
     
 class BatidaGetResponseDto(BatidaResponseDto):
