@@ -17,7 +17,8 @@ def eliminar_archivo(path: str):
 
 
 router = APIRouter(
-    tags=["Informes"],  
+    tags=["Informes"],
+    prefix="/informes",  
     responses={
         404: {"description": "Recurso no encontrado", "model": NotFoundErrorResponse},
         500: {"description": "Error interno del servidor","model": InternalServerErrorResponse}
@@ -25,7 +26,7 @@ router = APIRouter(
 )
 
 @router.get(
-    "/informe/batida",
+    "/batida",
     summary="Generar informe de asistentes a batida",
     description="Genera un PDF o Excel con los asistentes y lo devuelve para descarga.",
     responses={
@@ -78,7 +79,7 @@ async def generar_informe_batida(
 
 
 @router.get(
-    "/informe/zona",
+    "/zona",
     summary="Generar informe de voluntarios en zona",
     description="Genera un PDF o Excel con los voluntarios registrados en la zona indicada, y lo devuelve para descarga.",
 

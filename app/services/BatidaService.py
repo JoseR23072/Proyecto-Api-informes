@@ -189,16 +189,16 @@ class BatidaService:
 
     async def ver_batidas_por_voluntario(self, dto: BatidasVoluntarioRequestDto) -> List[BatidaResponseDto]:
         #Validar si el voluntario existe
-        voluntario = await MicroserviciosService.obtener_datos_voluntario(dto.codigo_voluntario)
+        voluntario = await MicroserviciosService.obtener_datos_voluntario(dto.voluntariosbatida)
         if not voluntario:
-            raise ValueError(f"El voluntario con código {dto.codigo_voluntario} no existe.")
+            raise ValueError(f"El voluntario con código {dto.voluntariosbatida} no existe.")
 
         # Obtener todas las batidas y filtrar por código
         entidades = self.repository.ver_batidas()
         filtradas: List[BatidaEntity] = []
         for entidad in entidades:
             lista_ids = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
-            if dto.codigo_voluntario in lista_ids:
+            if dto.voluntariosbatida in lista_ids:
                 filtradas.append(entidad)
 
         if not filtradas:
