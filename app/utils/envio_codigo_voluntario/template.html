@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bienvenido a RiverSpain</title>
+  <style type="text/css">body{margin:0;padding:0;background:#f8f9fa;font-family:Arial,sans-serif;color:#333;}.card{max-width:600px;margin:40px auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);overflow:hidden;}.header{background:#2c3e50;padding:20px;text-align:center;}.header img{height:60px;display:inline-block;}.content{padding:20px;}.content h1{color:#2c3e50;font-size:22px;margin-bottom:16px;}.content p{margin:0 0 12px;line-height:1.5;}.codigo{font-size:19px;font-weight:bold;color:#e74c3c;margin:8px 0;}.footer{background:#f1f1f1;padding:10px;font-size:14px;text-align:center;color:#666;}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+        
+    </div>
+    <div class="content">
+      <h1>¡Bienvenido/a, {{ nombre }} {{ apellidos }}!</h1>
+      <p>Gracias por unirte a <strong>RiverSpain</strong>. Tu número de voluntario es:</p>
+      <p class="codigo">{{ numerovoluntario }}</p>
+      <p>Con él podrás <strong>apuntarte</strong> a batidas y recibir recordatorios.</p>
+      <p>Si tienes alguna duda, contáctanos en <a href="mailto:support@riverspain.com">support@riverspain.com</a>.</p>
+    </div>
+    <div class="footer">
+      © {{ año }} RiverSpain. Todos los derechos reservados.
+    </div>
+  </div>
+</body>
+</html>

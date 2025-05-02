@@ -6,6 +6,16 @@ from schemas.Voluntario import VoluntarioDto
 from datetime import date
 import os
 
+# Obtener la ruta absoluta del directorio del script actual (app/utils)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Ruta al directorio de plantillas
+
+output_path=os.path.join(current_dir,"salidas_excel")
+os.makedirs(output_path, exist_ok=True)
+
+
+
 def generar_excel_informe_batida(
     batida: BatidaResponseDto,
 ) -> str:
@@ -21,15 +31,7 @@ def generar_excel_informe_batida(
     Returns:
         str: Ruta completa al archivo Excel generado.
     """
-    # Obtener la ruta absoluta del directorio del script actual (app/utils)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Ruta al directorio de plantillas
-    
-    output_path=os.path.join(current_dir,"salidas_excel")
-
-
-    os.makedirs(output_path, exist_ok=True)
 
     # 1) Hoja de Resumen
     resumen_data = {
@@ -78,7 +80,8 @@ def generar_excel_informe_batida(
     safe_name = "_".join(batida.nombre.lower().split())
     date_str = batida.fecha_evento.isoformat()
     file_name = f"{safe_name}_{date_str}_informe.xlsx"
-    file_path = output_path / file_name
+    file_path = os.path.join(output_path, file_name)
+
 
     # Escribir Excel con dos hojas y formato básico
     with pd.ExcelWriter(file_path, engine="openpyxl") as writer:

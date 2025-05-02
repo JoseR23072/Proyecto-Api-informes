@@ -29,8 +29,10 @@ async def enviar_recordatorios_diarios(batidas:List[BatidaResponseDto]):
                     longitud=batida.longitud,
                     ciudad="Prueba"
                 )
+                
                 enviar_email_recordatorio(pdf_file_path=pdf_path, destinatario=voluntario.email)
                 logging.info(f"Recordatorio generado para {voluntario.email}.")
+                
     
         else:
             logging.info(f"No se envía recordatorio para '{batida.nombre}' (fecha programada: {batida_fecha}).")

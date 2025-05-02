@@ -139,7 +139,6 @@ async def modificar_batida(batida: BatidaUpdateDto, service: ServiceBatida) -> B
 
     Raises:
         HTTPException 400: Errores de validación de negocio (zona o voluntarios no existen).
-        HTTPException 404: Si la batida no existe.
         HTTPException 422: Error de validación de tipo o formato en la entrada.
         HTTPException 500: Error inesperado.
     """

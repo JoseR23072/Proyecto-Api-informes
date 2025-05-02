@@ -6,9 +6,13 @@ import logging
 from utils.enviar_recordatorios_asistencia_batidas import enviar_recordatorios_diarios
 from fastapi import Depends
 from services.UtilitiesService import UtilitiesService
+
+
 # Crear el scheduler
 scheduler = AsyncIOScheduler()
 TAREA_ID="enviar_recordatorios_diarios"
+
+
 def iniciar_scheduler():
     """
     Configura y arranca las tareas programadas en el scheduler.
@@ -39,9 +43,7 @@ def modificar_horario(hour: int, minute: int):
     :param minute: minuto (0-59)
     :raises ValueError: si fuera de rango
     """
-    # Validación de rango
-    if not (0 <= hour <= 23 and 0 <= minute <= 59):
-        raise ValueError("Hora o minuto fuera de rango válido.")
+    
 
     # Crear nuevo trigger y reprogramar
     new_trigger = CronTrigger(hour=hour, minute=minute, timezone=pytz.timezone("Europe/Madrid"))
