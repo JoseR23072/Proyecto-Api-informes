@@ -1,4 +1,3 @@
-import datetime
 import logging
 import asyncio
 from utils.generar_pdf_recordatorio_asistencia_batida import generar_pdf_recordatorio
