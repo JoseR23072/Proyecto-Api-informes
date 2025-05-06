@@ -7,6 +7,7 @@ from schemas.batida.BatidaCreateDto import BatidaCreateDto
 from schemas.batida.BatidaUpdateDto import BatidaUpdateDto
 from schemas.batida.ApuntarseResponseDto import ApuntarseResponseDto
 from schemas.batida.BatidasErrorResponses import InternalServerErrorResponse,NotFoundErrorResponse,ValidationErrorResponse,UnprocessableEntityResponse,UnprocessableEntityResponseGet,NotBatidasFoundResponse,VoluntarioDuplicadoResponse,BatidaNotFoundResponse,PathParamValidationErrorResponse,VoluntarioValidationErrorResponse,VoluntarioNotFoundResponse,PathParamBatidaValidationErrorResponse,BatidaDeleteNotFoundResponse,BusinessValidationErrorResponse
+from schemas.batida.BatidaZonaResponseDto import BatidaZonaResponseDto
 from schemas.batida.BatidaDesapuntarseResponseDto import DesapuntarseResponseDto,VoluntarioNoApuntadoResponse
 from schemas.batida.BatidaDeleteResponseDto import EliminarBatidaResponseDto
 from schemas.batida.BatidasVoluntarioRequestDto import BatidasVoluntarioRequestDto
@@ -31,7 +32,7 @@ ServiceBatida=Annotated[BatidaService,Depends(BatidaService)]
         422: {"description": "Error de validación de datos de entrada", "model": UnprocessableEntityResponse},
         500: {"description": "Error interno del servidor", "model": InternalServerErrorResponse}
     })
-async def crear_batida(batida: BatidaCreateDto, service: ServiceBatida) -> BatidaResponseDto:
+async def crear_batida(batida: BatidaCreateDto, service: BatidaService = Depends(BatidaService) ) -> BatidaResponseDto:
     """
     Endpoint para crear una nueva batida.
 
@@ -277,5 +278,30 @@ def eliminar_batida(
         return service.eliminar_batida(id_batida)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+    
+
+@router.get(
+    "/batidas/verBatidasZona",
+    response_model=List[BatidaZonaResponseDto],
+    status_code=status.HTTP_200_OK,
+    summary="Listar batidas de una zona",
+    description="Devuelve las batidas asociadas a la zona indicada por su ID.",
+    responses={
+        200: {
+            "description": "Lista de batidas obtenida (vacía si no hay datos)",
+            "model":List[BatidaZonaResponseDto]
+        }
+        
+    }
+)
+async def listar_batidas_de_zona(
+    id_zona:int,
+    service: ServiceBatida
+) -> List[BatidaResponseDto]:
+    
+    try:
+        return await service.buscar_batidas_de_una_zona(id_zona)
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")

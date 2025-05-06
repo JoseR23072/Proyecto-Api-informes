@@ -64,3 +64,8 @@ class BatidaRepository:
 
         resultado=self.session.exec(statement).all()
         return resultado
+    
+    def buscar_batidas_por_zona(self,id_zona:int)->List[BatidaEntity]:
+        statement=select(BatidaEntity).where(BatidaEntity.id_zona==id_zona)
+        resultado=self.session.exec(statement).all()
+        return resultado

@@ -9,6 +9,7 @@ from schemas.batida.BatidaCreateDto import BatidaCreateDto
 from schemas.batida.BatidaResponseDto import BatidaResponseDto
 from schemas.batida.ApuntarseResponseDto import ApuntarseResponseDto
 from schemas.batida.BatidasVoluntarioRequestDto import BatidasVoluntarioRequestDto
+from schemas.batida.BatidaZonaResponseDto import BatidaZonaResponseDto
 from schemas.batida.BatidaDeleteResponseDto import EliminarBatidaResponseDto
 from repository.BatidaRepository import BatidaRepository
 from models.Batida import BatidaEntity
@@ -286,3 +287,38 @@ class BatidaService:
             lista_completa.append(response)
 
         return lista_completa
+    
+
+    async def buscar_batidas_de_una_zona(self,id_zona:int)-> List[BatidaZonaResponseDto]:
+        batidasEntidades=self.repository.buscar_batidas_por_zona(id_zona)
+
+        if not batidasEntidades:
+            return [
+
+            ]
+        
+        ids_voluntarios=set()
+        for batida in batidasEntidades:
+            vol=ast.literal_eval(batida.voluntarios) if batida.voluntarios else []
+            ids_voluntarios.update(vol)
+        
+        voluntarios_info:List[VoluntarioDto]=await MicroserviciosService.obtener_datos_voluntarios(list(ids_voluntarios))
+
+        voluntarios_map={
+            vol.numerovoluntario:""+vol.nombre+vol.apellidos for vol in voluntarios_info 
+        }
+
+        lista_batidas:List[BatidaZonaResponseDto]=[]
+
+        for ent in batidasEntidades:
+            vol_ids=ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
+            lista_info_voluntarios=[
+                voluntarios_map.get(vol) for vol in vol_ids if vol in vol_ids
+            ]
+
+            nombres_voluntarios = ",".join(lista_info_voluntarios) if lista_info_voluntarios else ""
+
+            ent.voluntarios=nombres_voluntarios
+            lista_batidas.append(BatidaZonaResponseDto.from_entity(ent))
+
+        return lista_batidas
