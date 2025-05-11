@@ -34,7 +34,7 @@ async def reprogramar_tarea(
 ) -> SchedulerTimeResponseDto:
     try:
         # Reprogramar
-        modificar_horario(dto.hour, dto.minute)
+        modificar_horario(dto.hora,dto.minuto)
         # Obtener próxima ejecución
         job = scheduler.get_job(TAREA_ID)
         proxima_tarea = job.next_run_time if job else None
@@ -73,7 +73,7 @@ async def enviar_recordario_batida_manual(
     
     try:
         await utils.enviar_recordatorio_manual(batida)
-        return EnvioRecordatorioResponseDto(code=20000, message=f"Recordatorio enviado para batida {id_batida}")
+        return EnvioRecordatorioResponseDto(code=200, message=f"Recordatorio enviado para batida {id_batida}")
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno al enviar recordatorio manual")
 
