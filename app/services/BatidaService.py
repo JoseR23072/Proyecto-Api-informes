@@ -25,6 +25,7 @@ class BatidaService:
     async def crear_batida(self, batida_dto: BatidaCreateDto) -> BatidaResponseDto:
         #Validamos que la id de la zona existe
         zona = await MicroserviciosService.obtener_datos_zona(batida_dto.id_zona)
+        
         if not zona:
             raise ValueError("La zona con el ID proporcionado no existe.")
         
@@ -46,7 +47,7 @@ class BatidaService:
         return BatidaResponseDto.from_entity(entidad,obtener_info_voluntarios,zona)
 
     async def ver_batidas(self) -> List[BatidaResponseDto]:
-        ###FALTA ZONAS
+       
         try:
             entidades = self.repository.ver_batidas()
             if not entidades:
@@ -290,6 +291,11 @@ class BatidaService:
     
 
     async def buscar_batidas_de_una_zona(self,id_zona:int)-> List[BatidaZonaResponseDto]:
+    
+        zona = await MicroserviciosService.obtener_datos_zona(id_zona)
+        if not zona:
+            raise ValueError(f"La zona con ID {id_zona} no existe.")
+            
         batidasEntidades=self.repository.buscar_batidas_por_zona(id_zona)
 
         if not batidasEntidades:

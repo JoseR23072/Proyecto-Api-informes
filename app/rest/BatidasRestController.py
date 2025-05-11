@@ -292,6 +292,10 @@ def eliminar_batida(
         200: {
             "description": "Lista de batidas obtenida (vacía si no hay datos)",
             "model":List[BatidaZonaResponseDto]
+        },
+        400: {
+            "description": "ID de una zona inexistente",
+            "model":ValidationErrorResponse
         }
         
     }
@@ -303,5 +307,7 @@ async def listar_batidas_de_zona(
     
     try:
         return await service.buscar_batidas_de_una_zona(id_zona)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")

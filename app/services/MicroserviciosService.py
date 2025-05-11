@@ -29,6 +29,8 @@ class MicroserviciosService:
                 f"{settings.MICROSERVICIOS_URL}/zonas/verZonaInfo",
                 params={"id": id_zona}
             )
+            if response.status_code == 500:
+                return None
             if response.status_code == 204 or not response.content:
                 return None
             data = response.json()

@@ -66,6 +66,9 @@ class InformeService:
         # 1) Obtengo la zona completa (lanza ValueError si no existe)
         zona: ZonaDto = await MicroserviciosService.obtener_datos_zona(id_zona)
 
+        if not zona:
+            raise ValueError(f"La zona con ID {id_zona} no existe.")
+
         # 2) Generar el informe en el formato solicitado
         if tipo == "pdf":
             ruta = generar_pdf_informe_zona(zona)
