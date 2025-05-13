@@ -1,7 +1,8 @@
 from models.Batida import BatidaEntity
 from config.database import get_session
 from fastapi import Depends
-from sqlmodel import Session,select
+from sqlmodel import Session,select,delete,distinct
+from models.BatidaVoluntario import BatidaVoluntario
 from typing import List
 from datetime import date
 
@@ -23,34 +24,36 @@ class BatidaRepository:
         statement=select(BatidaEntity)
         return self.session.exec(statement)
 
-    def modificar_batida(self,batida:BatidaEntity)->BatidaEntity:
+    def modificar_batida(self, batida: BatidaEntity) -> BatidaEntity:
         batida_existente = self.session.get(BatidaEntity, batida.id)
         if batida_existente:
             batida_existente.nombre = batida.nombre
             batida_existente.latitud = batida.latitud
             batida_existente.longitud = batida.longitud
             batida_existente.id_zona = batida.id_zona
-            batida_existente.voluntarios = batida.voluntarios
             batida_existente.fecha_evento = batida.fecha_evento
             batida_existente.descripcion = batida.descripcion
             batida_existente.estado = batida.estado
+
             self.session.commit()
             self.session.refresh(batida_existente)
             return batida_existente
-        else:
-            return None
-    
-    def actualizar_voluntarios(self, id_batida:int, lista_voluntarios:str):
-        batida=self.session.get(BatidaEntity,id_batida)
-        if batida:
-            batida.voluntarios=lista_voluntarios
-
-            self.session.commit()
-            self.session.refresh(batida)
-            return batida
-
         return None
-  
+    
+    def apuntar_voluntario(self, id_batida: int, id_voluntario: int) -> None:
+        voluntario = BatidaVoluntario(id_batida=id_batida, id_voluntario=id_voluntario)
+        self.session.add(voluntario)
+        self.session.commit()
+    
+    def desapuntar_voluntario(self, id_batida: int, id_voluntario: int) -> None:
+        self.session.exec(
+            delete(BatidaVoluntario).where(
+                BatidaVoluntario.id_batida == id_batida,
+                BatidaVoluntario.id_voluntario == id_voluntario
+            )
+        )
+        self.session.commit()
+
     def eliminar_batida(self,id_batida:int) -> bool:
         batida = self.session.get(BatidaEntity, id_batida)
         if batida:
@@ -69,3 +72,35 @@ class BatidaRepository:
         statement=select(BatidaEntity).where(BatidaEntity.id_zona==id_zona)
         resultado=self.session.exec(statement).all()
         return resultado
+    
+    def obtener_voluntarios_por_batida(self, id_batida: int) -> List[int]:
+        statement = select(BatidaVoluntario.id_voluntario).where(BatidaVoluntario.id_batida == id_batida)
+        resultado = self.session.exec(statement).all()
+        return resultado
+    
+    def obtener_voluntarios_distintos(self, id_batidas: List[int] ) -> List[int]:
+        statement = select(distinct(BatidaVoluntario.id_voluntario))
+        if id_batidas is not None:
+            statement = statement.where(BatidaVoluntario.id_batida.in_(id_batidas))
+        resultado = self.session.exec(statement).all()
+        return resultado
+    
+    def modificar_relaciones_voluntarios(self, id_batida: int, nuevos_voluntarios: List[int]) -> None:
+        # Eliminar registros existentes
+        self.session.exec(
+            delete(BatidaVoluntario).where(BatidaVoluntario.id_batida == id_batida)
+        )
+
+        # Agregar nuevos registros
+        for id_vol in nuevos_voluntarios:
+            self.session.add(BatidaVoluntario(id_batida=id_batida, id_voluntario=id_vol))
+
+        self.session.commit()
+
+    def obtener_batidas_por_voluntario(self, id_voluntario: int) -> List[BatidaEntity]:
+        statement = (
+            select(BatidaEntity)
+            .join(BatidaVoluntario, BatidaEntity.id == BatidaVoluntario.id_batida)
+            .where(BatidaVoluntario.id_voluntario == id_voluntario)
+        )
+        return self.session.exec(statement).all()

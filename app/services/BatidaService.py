@@ -40,7 +40,7 @@ class BatidaService:
         zona = await MicroserviciosService.obtener_datos_zona(entidad.id_zona)
         if not zona:
             raise ValueError("La zona con el ID proporcionado no existe.")
-        lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
+        lista_voluntarios:List[int] = self.repository.obtener_voluntarios_por_batida(id_batida)
         
         obtener_info_voluntarios = await MicroserviciosService.obtener_datos_voluntarios(lista_voluntarios)
         
@@ -53,23 +53,31 @@ class BatidaService:
             if not entidades:
                 return []
 
-            lista_dto=[BatidaDTO.fromEntity(entidad) for entidad in entidades]
+
+            batida_dtos = [BatidaDTO.fromEntity(entidad) for entidad in entidades]
+
+            id_batidas = [dto.id_batida for dto in batida_dtos]
+
+            all_ids = self.repository.obtener_voluntarios_distintos(id_batidas)
+
+            
+            """ lista_dto=[BatidaDTO.fromEntity(entidad) for entidad in entidades]
             #se crea un set para que no se repitan los ids
             all_ids = set()
             for b in lista_dto:
                 lista_voluntarios=ast.literal_eval(b.voluntarios)
-                all_ids.update(lista_voluntarios)
+                all_ids.update(lista_voluntarios) """
 
-            voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
+            voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(all_ids)
 
             # 5. Indexar por número de voluntario para acceso rápido
-            voluntario_map: Dict[str, VoluntarioDto] = {
-                v.numerovoluntario: v for v in voluntarios_info
+            voluntario_map: Dict[int, VoluntarioDto] = {
+                v.id: v for v in voluntarios_info
             }
             lista_batidas: List[BatidaResponseDto]=[]
-            for b in lista_dto:
-                voluntarios_list = ast.literal_eval(b.voluntarios)
-                lista_info_voluntarios=[voluntario_map[vol_id] for vol_id in voluntarios_list if vol_id in voluntario_map]
+            for b in batida_dtos:
+                voluntarios_list = self.repository.obtener_voluntarios_por_batida(b.id_batida)
+                lista_info_voluntarios = [voluntario_map[vol_id] for vol_id in voluntarios_list if vol_id in voluntario_map]
                 zona = await MicroserviciosService.obtener_datos_zona(b.id_zona)
                 response = BatidaResponseDto(
                     id_batida=b.id_batida,
@@ -93,7 +101,7 @@ class BatidaService:
         entidad = self.repository.buscar_batida(dto.id_batida)
         if not entidad:
             raise ValueError(f"La batida con ID {dto.id_batida} no existe.")
-
+        zona = None
         # Validar zona si se modifica
         if dto.id_zona is not None:
             zona = await MicroserviciosService.obtener_datos_zona(dto.id_zona)
@@ -101,27 +109,31 @@ class BatidaService:
                 raise ValueError(f"La zona con ID {dto.id_zona} no existe.")
 
 
+        voluntarios_validados: List[int] = []
+
         # validamos que la lista de voluntarios no contenga ids incorrectos
         if dto.voluntarios is not None:
-            voluntarios=ast.literal_eval(dto.voluntarios)
+            voluntarios=dto.voluntarios
             info_vols = await MicroserviciosService.obtener_datos_voluntarios(voluntarios)
             
             if len(info_vols) != len(voluntarios):
                 raise ValueError("Alguno de los IDs de voluntario no existe.")
 
             # Guardamos la lista serializada
-            entidad.voluntarios = str(dto.voluntarios)
+            voluntarios_validados = voluntarios
 
         #modificamos unicamente los campos que no sean None
         for field, value in dto.model_dump().items():
-            if field == "id_batida" or value is None:
+            if field == "id_batida" or value is None or field =="voluntarios":
                 continue
             setattr(entidad, field, value)
 
         
         entidad_modificada = self.repository.modificar_batida(entidad)
+        if voluntarios_validados:
+            self.repository.modificar_relaciones_voluntarios(entidad_modificada.id, voluntarios_validados)
 
-        lista_ids = json.loads(entidad_modificada.voluntarios or "[]")
+        lista_ids = voluntarios_validados
         info_vols_final = await MicroserviciosService.obtener_datos_voluntarios(lista_ids)
 
         return BatidaResponseDto.from_entity(entidad_modificada, info_vols_final,zona)
@@ -137,19 +149,15 @@ class BatidaService:
         if not voluntario:
             raise ValueError(f"El voluntario con código {codigo_voluntario} no existe.")
 
-        # Convertir el string a lista real de Python 
-        lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
+        lista_ids_voluntarios=self.repository.obtener_voluntarios_por_batida(entidad.id)
 
 
-        if codigo_voluntario in lista_voluntarios:
+
+        if voluntario.id in lista_ids_voluntarios:
             raise ValueError(f"El voluntario {codigo_voluntario} ya está apuntado a la batida.")
-                
-        lista_voluntarios.append(codigo_voluntario)
 
+        self.repository.apuntar_voluntario(id_batida, voluntario.id)
         
-
-        self.repository.actualizar_voluntarios(id_batida,str(lista_voluntarios))
-
         return ApuntarseResponseDto(
             id_batida=id_batida,
             codigo_voluntario=codigo_voluntario,
@@ -168,18 +176,18 @@ class BatidaService:
         if not voluntario:
             raise ValueError(f"El voluntario con código {codigo_voluntario} no existe.")
 
-        # Convertir el string a lista real de Python 
-        lista_voluntarios = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
+        voluntario = await MicroserviciosService.obtener_datos_voluntario(codigo_voluntario)
+        if not voluntario:
+            raise ValueError(f"El voluntario con código {codigo_voluntario} no existe.")
 
+        lista_ids_voluntarios=self.repository.obtener_voluntarios_por_batida(entidad.id)
 
-        if codigo_voluntario not in lista_voluntarios:
+        if voluntario.id not in lista_ids_voluntarios:
             raise ValueError(f"El voluntario {codigo_voluntario} no estaba apuntado a la batida.")
                 
-        lista_voluntarios.remove(codigo_voluntario)
 
-        
 
-        self.repository.actualizar_voluntarios(id_batida,str(lista_voluntarios))
+        self.repository.desapuntar_voluntario(id_batida, voluntario.id)
 
         return DesapuntarseResponseDto(
             id_batida=id_batida,
@@ -196,33 +204,29 @@ class BatidaService:
             raise ValueError(f"El voluntario con código {dto.voluntariosbatida} no existe.")
 
         # Obtener todas las batidas y filtrar por código
-        entidades = self.repository.ver_batidas()
-        filtradas: List[BatidaEntity] = []
-        for entidad in entidades:
-            lista_ids = ast.literal_eval(entidad.voluntarios) if entidad.voluntarios else []
-            if dto.voluntariosbatida in lista_ids:
-                filtradas.append(entidad)
+
+        filtradas=self.repository.obtener_batidas_por_voluntario(voluntario.id)
+
 
         if not filtradas:
             return []
 
-        # 3) Recolectar todos los voluntarios de esas batidas para obtener info
-        all_ids = set()
-        for ent in filtradas:
-            ids = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            all_ids.update(ids)
+        id_batidas = [e.id for e in filtradas]
+        all_ids = self.repository.obtener_voluntarios_distintos(id_batidas)
 
-        voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
+        voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(all_ids)
         # map por numerovoluntario
-        voluntario_map: Dict[str, VoluntarioDto] = {
-            v.numerovoluntario: v for v in voluntarios_info
+        voluntario_map: Dict[int, VoluntarioDto] = {
+            v.id: v for v in voluntarios_info
         }
 
         # 4) Construir lista de DTOs
         lista_filtrada: List[BatidaResponseDto] = []
         for ent in filtradas:
-            voluntarios_list = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntarios_list if vol_id in voluntario_map]
+            lista_ids = self.repository.obtener_voluntarios_por_batida(ent.id)
+
+            lista_info_voluntarios= [voluntario_map[id] for id in lista_ids if id in voluntario_map]
+
             
             zona = await MicroserviciosService.obtener_datos_zona(ent.id_zona)
             response = BatidaResponseDto(
@@ -252,42 +256,6 @@ class BatidaService:
             message="Batida eliminada exitosamente"
         )
     
-    async def buscar_batidas_por_fecha(self,fecha:date) -> List[BatidaResponseDto]:
-        entidades:List[BatidaEntity]=self.repository.buscar_batidas_por_fecha(fecha)
-        
-        all_ids = set()
-        for ent in entidades:
-            codigos_voluntarios = ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            all_ids.update(codigos_voluntarios)
-
-
-        voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(list(all_ids))
-
-        voluntario_map: Dict[str,VoluntarioDto]={
-            vol.numerovoluntario:vol for vol in voluntarios_info
-        }
-        
-        lista_completa:List[BatidaResponseDto]=[]
-
-        for entidad in entidades:
-            voluntario_codigos=ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            lista_info_voluntarios=[voluntario_map.get(vol_id) for vol_id in voluntario_codigos if vol_id in voluntario_map]
-
-            zona = await MicroserviciosService.obtener_datos_zona(ent.id_zona)
-            response = BatidaResponseDto(
-                id_batida=ent.id,
-                nombre=ent.nombre,
-                latitud=ent.latitud,
-                longitud=ent.longitud,
-                zona={},
-                voluntarios=lista_info_voluntarios,
-                estado=ent.estado,
-                fecha_evento=ent.fecha_evento,
-                descripcion=ent.descripcion
-            )
-            lista_completa.append(response)
-
-        return lista_completa
     
 
     async def buscar_batidas_de_una_zona(self,id_zona:int)-> List[BatidaZonaResponseDto]:
@@ -303,28 +271,28 @@ class BatidaService:
 
             ]
         
-        ids_voluntarios=set()
-        for batida in batidasEntidades:
-            vol=ast.literal_eval(batida.voluntarios) if batida.voluntarios else []
-            ids_voluntarios.update(vol)
-        
-        voluntarios_info:List[VoluntarioDto]=await MicroserviciosService.obtener_datos_voluntarios(list(ids_voluntarios))
+        id_batidas = [e.id for e in batidasEntidades]
+        all_ids = self.repository.obtener_voluntarios_distintos(id_batidas)
+
+
+        voluntarios_info:List[VoluntarioDto]=await MicroserviciosService.obtener_datos_voluntarios(all_ids)
 
         voluntarios_map={
-            vol.numerovoluntario:""+vol.nombre+vol.apellidos for vol in voluntarios_info 
+            vol.id:""+vol.nombre+vol.apellidos for vol in voluntarios_info 
         }
 
         lista_batidas:List[BatidaZonaResponseDto]=[]
 
         for ent in batidasEntidades:
-            vol_ids=ast.literal_eval(ent.voluntarios) if ent.voluntarios else []
-            lista_info_voluntarios=[
-                voluntarios_map.get(vol) for vol in vol_ids if vol in vol_ids
-            ]
+            lista_ids = self.repository.obtener_voluntarios_por_batida(ent.id)
+
+            lista_info_voluntarios= [voluntarios_map[id] for id in lista_ids if id in voluntarios_map]
+
+            
 
             nombres_voluntarios = ",".join(lista_info_voluntarios) if lista_info_voluntarios else ""
 
-            ent.voluntarios=nombres_voluntarios
-            lista_batidas.append(BatidaZonaResponseDto.from_entity(ent))
+            nombres_voluntarios
+            lista_batidas.append(BatidaZonaResponseDto.from_entity(ent,nombres_voluntarios))
 
         return lista_batidas

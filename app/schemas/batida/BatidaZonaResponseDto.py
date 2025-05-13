@@ -32,7 +32,7 @@ class BatidaZonaResponseDto(BaseModel):
     }
 
     @classmethod
-    def from_entity(cls, entidad: BatidaEntity) -> "BatidaZonaResponseDto":
+    def from_entity(cls, entidad: BatidaEntity,voluntarios: str) -> "BatidaZonaResponseDto":
         """
         Convierte una entidad BatidaEntity en un BatidaResponseDto, usando una lista de VoluntarioDto.
         """
@@ -41,7 +41,7 @@ class BatidaZonaResponseDto(BaseModel):
             nombre=entidad.nombre,
             latitud=entidad.latitud,
             longitud=entidad.longitud,
-            voluntariosbatida=entidad.voluntarios,
+            voluntariosbatida=voluntarios,
             estado=entidad.estado,
             fecha=entidad.fecha_evento,
             descripcion=entidad.descripcion,

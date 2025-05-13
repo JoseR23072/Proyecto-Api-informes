@@ -8,12 +8,12 @@ import asyncio  # Lo necesitas para lanzar la corrutina
 
 class MicroserviciosService:
     @staticmethod
-    async def obtener_datos_voluntarios(ids: List[str]) -> List[VoluntarioDto]:
+    async def obtener_datos_voluntarios(ids: List[int]) -> List[VoluntarioDto]:
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{settings.MICROSERVICIOS_URL}/voluntarios/verVoluntariosNum",
-                params={"numeros": ",".join(ids)}
+                f"{settings.MICROSERVICIOS_URL}/voluntarios/verVoluntariosId",
+                params={"ids":ids}
             )
             response.raise_for_status()
             data = response.json()
@@ -62,7 +62,7 @@ class MicroserviciosService:
         
 if __name__ == "__main__":
     async def main():
-        ids = ["Mi709629567","Mi70962956"]  # ids de ejemplo
+        ids = [1,2]  # ids de ejemplo
         voluntarios = await MicroserviciosService.obtener_datos_voluntarios(ids)
         print(voluntarios)
 

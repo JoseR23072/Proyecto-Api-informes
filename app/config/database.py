@@ -10,13 +10,16 @@ def create_db_and_tables():
     # Ruta del archivo SQL
     sql_file_path = os.path.join(os.path.dirname(__file__), "data.sql")
 
+    with open(sql_file_path, "r") as f:
+        sql_statements = f.read()
+
     # Leer y ejecutar el archivo SQL
     with engine.connect() as connection:
-        with open(sql_file_path, "r") as f:
-            sql_statement = f.read()
-            if sql_statement.strip():  # Asegurarse de que no está vacío
-                connection.execute(text(sql_statement))
-            connection.commit()
+        for statement in sql_statements.split(';'):
+            statement = statement.strip()
+            if statement:  # Asegurarse de que no está vacío
+                connection.execute(text(statement))
+        connection.commit()
 
 
 def get_session():

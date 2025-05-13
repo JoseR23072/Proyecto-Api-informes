@@ -10,7 +10,6 @@ class BatidaDTO(BaseModel):
     latitud: float
     longitud: float
     id_zona: int
-    voluntarios: str
     estado: Optional[bool] = False
     fecha_evento: date
     descripcion: str
@@ -23,7 +22,6 @@ class BatidaDTO(BaseModel):
             latitud=entidad.latitud,
             longitud=entidad.longitud,
             id_zona=entidad.id_zona,
-            voluntarios=entidad.voluntarios,
             estado=entidad.estado,
             fecha_evento=entidad.fecha_evento,
             descripcion=entidad.descripcion
