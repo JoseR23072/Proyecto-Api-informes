@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,ConfigDict
 from typing import List
 from datetime import date
 from schemas.Voluntario import VoluntarioDto
@@ -15,8 +15,8 @@ class BatidaResponseDto(BaseModel):
     fecha_evento: date = Field(..., description="Fecha del evento")
     descripcion: str = Field(..., description="Descripción de la batida")
 
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "id_batida": 1,
@@ -32,7 +32,8 @@ class BatidaResponseDto(BaseModel):
                 }
             ]
         }
-    }
+    )
+    
 
     @classmethod
     def from_entity(cls, entidad: BatidaEntity, voluntarios: List[VoluntarioDto],zona:ZonaDto) -> "BatidaResponseDto":

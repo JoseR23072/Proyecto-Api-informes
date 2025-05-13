@@ -2,24 +2,39 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-
-from main import app
-from schemas.batida.BatidaCreateDto import BatidaCreateDto
-from schemas.batida.BatidaResponseDto import BatidaResponseDto
-from services.BatidaService import BatidaService  # IMPORTANTE: el mismo objeto que usas en Depends
-
+from app.schemas.Zona import ZonaDto
+from app.main import app
+from app.schemas.batida.BatidaCreateDto import BatidaCreateDto
+from app.schemas.batida.BatidaResponseDto import BatidaResponseDto
+from app.services.BatidaService import BatidaService  # IMPORTANTE: el mismo objeto que usas en Depends
+from app.schemas.Ciudad import CiudadDto
 client = TestClient(app)
 
 class FakeService:
     async def crear_batida(self, dto: BatidaCreateDto) -> BatidaResponseDto:
+
+        ciudad_mock= CiudadDto(
+            id=1,
+            nombre="ciudad mock",
+            latitud=20.5,
+            longitud=-10.2
+        )
+        zona_mock = ZonaDto(
+            id=1,
+            nombre="Zona Mock",
+            latitud=dto.latitud,
+            longitud=dto.longitud,
+            voluntariosZona=[],      # según tu esquema
+            ciudad=ciudad_mock
+        )
+
+
         return BatidaResponseDto(
             id_batida=999,
             nombre=dto.nombre,
             latitud=dto.latitud,
             longitud=dto.longitud,
-            zona={
-                
-            },          # rellena tu ZonaDto de prueba
+            zona=zona_mock,          # rellena tu ZonaDto de prueba
             voluntarios=[],
             estado=dto.estado,
             fecha_evento=dto.fecha_evento,
@@ -44,6 +59,7 @@ def test_crear_batida_unitario_exito():
     }
 
     response = client.post("/riverspain/batida", json=payload)
+    print(response.status_code, response.json()) 
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
     assert data["id_batida"] == 999

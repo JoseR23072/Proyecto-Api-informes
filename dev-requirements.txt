@@ -4,3 +4,4 @@ mypy            # Análisis estático de tipos
 
 flake8
 
+pytest-cov

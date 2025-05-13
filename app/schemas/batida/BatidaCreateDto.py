@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,ConfigDict
 from typing import Optional, List
 from datetime import date
 from models.Batida import BatidaEntity  # Asumimos que esta es tu entidad
@@ -13,8 +13,8 @@ class BatidaCreateDto(BaseModel):
     estado: Optional[bool] = Field(default=False, description="Estado de la batida (activa/inactiva)")
     
 
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "nombre": "Batida en el Parque Natural",
@@ -27,7 +27,9 @@ class BatidaCreateDto(BaseModel):
                 }
             ]
         }
-    }
+        
+    )
+    
 
     def to_entity(self) -> BatidaEntity:
         """

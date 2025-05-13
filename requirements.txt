@@ -7,13 +7,12 @@ weasyprint
 jinja2
 #########
 email-validator #nuevas dependencias a partir de aqui
-requests
 pandas
 openpyxl
 yagmail
 apscheduler
-python-dotenv
 httpx #fetch asincronos
+
 pydantic-settings
 
 py-eureka-client
