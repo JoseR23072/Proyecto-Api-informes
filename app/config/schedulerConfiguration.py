@@ -68,19 +68,23 @@ def detener_scheduler():
 async def enviar_recordatorios_batidas() -> None:
         
         next_day = date.today() + timedelta(days=1)
-        # Llamas a tu método nuevo
         batidas_del_proximo_dia: List[BatidaResponseDto] = await buscar_batidas_por_fecha(next_day)
-
-        await enviar_recordatorios_diarios(batidas_del_proximo_dia)
+        if batidas_del_proximo_dia:
+            await enviar_recordatorios_diarios(batidas_del_proximo_dia)
+        
 
 
 async def buscar_batidas_por_fecha(fecha:date) -> List[BatidaResponseDto]:
-    session = get_session()
+    session_gen = get_session()
+    session=next(session_gen)
     try:
         repository = BatidaRepository(session)
 
         # 2) Ahora esto ya funciona, porque session es un Session real
         entidades: List[BatidaEntity] = repository.buscar_batidas_por_fecha(fecha)
+        if not entidades:
+            return None
+        
         id_batidas = [e.id for e in entidades]
         all_ids = repository.obtener_voluntarios_distintos(id_batidas)
 
@@ -110,3 +114,7 @@ async def buscar_batidas_por_fecha(fecha:date) -> List[BatidaResponseDto]:
         return lista_completa
     finally:
         session.close()
+        try:
+            next(session_gen)
+        except StopIteration:
+            pass

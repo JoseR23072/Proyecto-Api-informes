@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     # Inicializa y realiza la conexión a eureka
     await iniciar_eureka()
 
-    # iniciar_scheduler() DE MOMENTO NO ESTA FUNCIONAL ARREGLAR
+    iniciar_scheduler() 
     
     #En caso que el servicio se detenga se ejecutara esto
     yield #En caso de que el servicio se apage se procesaran estas instrucciones

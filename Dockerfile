@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 \
     libffi-dev \
+    fonts-noto-color-emoji \
     && rm -rf /var/lib/apt/lists/*
 
 
