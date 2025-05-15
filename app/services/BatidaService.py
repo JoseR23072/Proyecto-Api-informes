@@ -68,16 +68,22 @@ class BatidaService:
                 lista_voluntarios=ast.literal_eval(b.voluntarios)
                 all_ids.update(lista_voluntarios) """
 
-            voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(all_ids)
+            if all_ids:
 
-            # 5. Indexar por número de voluntario para acceso rápido
-            voluntario_map: Dict[int, VoluntarioDto] = {
+                voluntarios_info = await MicroserviciosService.obtener_datos_voluntarios(all_ids)
+                 # 5. Indexar por número de voluntario para acceso rápido
+                voluntario_map: Dict[int, VoluntarioDto] = {
                 v.id: v for v in voluntarios_info
-            }
+                }
+           
             lista_batidas: List[BatidaResponseDto]=[]
             for b in batida_dtos:
                 voluntarios_list = self.repository.obtener_voluntarios_por_batida(b.id_batida)
-                lista_info_voluntarios = [voluntario_map[vol_id] for vol_id in voluntarios_list if vol_id in voluntario_map]
+                lista_info_voluntarios=[]
+                if voluntarios_list:
+                    
+                    lista_info_voluntarios = [voluntario_map[vol_id] for vol_id in voluntarios_list if vol_id in voluntario_map]
+
                 zona = await MicroserviciosService.obtener_datos_zona(b.id_zona)
                 response = BatidaResponseDto(
                     id_batida=b.id_batida,
@@ -275,17 +281,19 @@ class BatidaService:
         all_ids = self.repository.obtener_voluntarios_distintos(id_batidas)
 
 
-        voluntarios_info:List[VoluntarioDto]=await MicroserviciosService.obtener_datos_voluntarios(all_ids)
+        if all_ids:
+            voluntarios_info:List[VoluntarioDto]=await MicroserviciosService.obtener_datos_voluntarios(all_ids)
 
-        voluntarios_map={
+            voluntarios_map={
             vol.id:""+vol.nombre+vol.apellidos for vol in voluntarios_info 
-        }
+            }
 
         lista_batidas:List[BatidaZonaResponseDto]=[]
 
         for ent in batidasEntidades:
             lista_ids = self.repository.obtener_voluntarios_por_batida(ent.id)
 
+            
             lista_info_voluntarios= [voluntarios_map[id] for id in lista_ids if id in voluntarios_map]
 
             

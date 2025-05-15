@@ -19,9 +19,9 @@ async def enviar_recordatorios_diarios(batidas:List[BatidaResponseDto]):
         # Recorrer cada voluntario de la batida y generar el PDF (o enviar correo)
         for voluntario in batida.voluntarios:
                 # Llamamos a la función existente que genera el PDF recordatorio para cada voluntario.
-                
+                nombre_voluntario=voluntario.nombre + " " + voluntario.apellidos
                 pdf_path=generar_pdf_recordatorio(
-                    nombre_voluntario=voluntario.nombre + " " + voluntario.apellidos,
+                    nombre_voluntario=nombre_voluntario,
                     nombre_batida=batida.nombre,
                     fecha=str(batida_fecha),
                     latitud=batida.latitud,
@@ -29,7 +29,7 @@ async def enviar_recordatorios_diarios(batidas:List[BatidaResponseDto]):
                     ciudad="Prueba"
                 )
                 
-                enviar_email_recordatorio(pdf_file_path=pdf_path, destinatario=voluntario.email)
+                enviar_email_recordatorio(pdf_file_path=pdf_path, destinatario=voluntario.email,nombre=nombre_voluntario)
                 logging.info(f"Recordatorio generado para {voluntario.email}.")
                 
     

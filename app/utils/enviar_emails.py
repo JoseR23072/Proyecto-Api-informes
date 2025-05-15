@@ -6,15 +6,17 @@ from config.settings import settings
 import logging
 from schemas.Voluntario import VoluntarioDto
 
-def enviar_email_recordatorio(pdf_file_path, destinatario):
+def enviar_email_recordatorio(pdf_file_path, destinatario,nombre:str):
     logging.info(f"El email es : {settings.EMAIL}")
     logging.info(f"La contraseña del envio del correo es : {settings.EMAIL_PASSWORD}")
     # Autenticación de Gmail
     yag = yagmail.SMTP(user=settings.EMAIL, password=settings.EMAIL_PASSWORD)
 
     asunto="Recordatorio Batida RiverSpain: ¡Nos encontramos en la acción!"
-    cuerpo_email = """\
-Estimado/a voluntario/a,
+
+    
+    cuerpo_email = f"""\
+Estimado/a {nombre},
 
 Te saludamos desde RiverSpain y queremos recordarte tu participación en nuestra próxima batida. Adjuntamos un archivo PDF con todos los detalles e instrucciones sobre la actividad.
 
